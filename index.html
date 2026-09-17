@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi - Mobil Asistan</title>
+    <title>Kandilli Kız Lisesi v1.01 - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // PANEL AÇMA FONKSİYONUNU ÖNE ALDIK (Tıklama kilitlenmelerini önler)
+        const APP_VERSION = "v1.01";
         const OGRETMEN_SIFRE = "kandilli_ogretmen";
         const IDARE_SIFRE = "kandilli_idare";
 
@@ -16,7 +16,7 @@
             let mesag = tur === 'ogretmen' ? "Öğretmen Giriş Şifresi:" : "İdare Giriş Şifresi:";
             let s = prompt(mesag);
             
-            if (s === null) return; // İptal edilirse çık
+            if (s === null) return;
 
             if (tur === 'ogretmen' && s === OGRETMEN_SIFRE) {
                 alert("Öğretmen Paneline Giriş Yapıldı!");
@@ -67,34 +67,39 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex; justify-content: space-between; align-items: center;
         }
-        header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
-        header .brand i { color: var(--accent); font-size: 1.4rem; }
+        header .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
+        header .brand i { color: var(--accent); font-size: 1.3rem; }
+        header .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         
         .header-btn {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            color: white; padding: 6px 12px; border-radius: 8px;
+            font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
         .header-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
-        .class-bar {
+        .user-bar {
             background: #ffffff; padding: 10px 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid var(--accent);
         }
-        .class-bar select {
-            padding: 5px 10px; border-radius: 6px;
-            border: 1px solid var(--primary); font-weight: 600;
-            color: var(--primary-dark); outline: none;
+        .user-info { font-size: 0.9rem; font-weight: 600; color: var(--primary-dark); }
+        .reset-btn { background: none; border: none; color: var(--gray); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+
+        /* GİRİŞ KARŞILAMA EKRANI (MODAL) */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(88, 0, 22, 0.95);
+            z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
+        .welcome-card {
+            background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .welcome-card h2 { color: var(--primary-dark); margin-bottom: 10px; font-size: 1.3rem; }
+        .welcome-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 20px; }
 
         main { padding: 15px; max-width: 650px; margin: 0 auto; }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -147,25 +152,49 @@
 </head>
 <body>
 
+    <!-- İLK AÇILIŞ ÖĞRENCİ GİRİŞ EKRANI -->
+    <div id="welcome-screen">
+        <div class="welcome-card">
+            <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2>Kandilli Kız Lisesi</h2>
+            <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
+            
+            <input type="text" id="login-name" placeholder="Adınız veya Lakabınız">
+            <select id="login-class">
+                <option value="">Sınıf / Şube Seçiniz</option>
+                <option value="9A">9-A</option><option value="9B">9-B</option>
+                <option value="10A">10-A</option><option value="10B">10-B</option>
+                <option value="11A">11-A (Sayısal)</option><option value="11B">11-B (EA)</option>
+                <option value="12A">12-A (Sayısal)</option><option value="12B">12-B (EA)</option>
+            </select>
+            
+            <button class="btn-submit" onclick="ogrenciGirisYap()">Öğrenci Olarak Başla</button>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: center; gap: 10px;">
+                <button class="reset-btn" onclick="paneliAc('ogretmen')">Öğretmen Girişi</button> | 
+                <button class="reset-btn" onclick="paneliAc('idare')">İdare Girişi</button>
+            </div>
+        </div>
+    </div>
+
     <header>
         <div class="brand">
             <i class="fas fa-graduation-cap"></i>
             <span>Kandilli Kız Lisesi</span>
+            <span class="version-tag">v1.01</span>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <!-- YÖNETİM BUTONLARI (ÖĞRENCİ GİRİŞ YAPINCA GİZLENİR) -->
+        <div id="admin-header-btns" style="display: flex; gap: 8px;">
             <button class="header-btn" onclick="paneliAc('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
             <button class="header-btn" onclick="paneliAc('idare')"><i class="fas fa-user-shield"></i> İdare</button>
         </div>
     </header>
 
-    <div class="class-bar">
-        <label for="student-class"><i class="fas fa-users"></i> Sınıfınız:</label>
-        <select id="student-class" onchange="odevleriGetir()">
-            <option value="9A">9-A</option><option value="9B">9-B</option>
-            <option value="10A">10-A</option><option value="10B">10-B</option>
-            <option value="11A">11-A (Sayısal)</option><option value="11B">11-B (EA)</option>
-            <option value="12A">12-A (Sayısal)</option><option value="12B">12-B (EA)</option>
-        </select>
+    <div class="user-bar" id="user-bar" style="display: none;">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i> <span id="display-user-name">Öğrenci</span> (<span id="display-user-class">9-A</span>)
+        </div>
+        <button class="reset-btn" onclick="profilSifirla()">Profil Değiştir</button>
     </div>
 
     <main>
@@ -280,6 +309,46 @@
         let yemekMenusu = "";
         let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
 
+        // ÖĞRENCİ KULLANICI YÖNETİMİ
+        let currentUser = JSON.parse(localStorage.getItem('kk_student_profile')) || null;
+
+        function ogrenciGirisYap() {
+            let name = document.getElementById('login-name').value.trim();
+            let cls = document.getElementById('login-class').value;
+
+            if(!name || !cls) {
+                alert("Lütfen adınızı ve sınıfınızı seçin.");
+                return;
+            }
+
+            currentUser = { name: name, class: cls };
+            localStorage.setItem('kk_student_profile', JSON.stringify(currentUser));
+            profilUygula();
+        }
+
+        function profilUygula() {
+            if(currentUser) {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('user-bar').style.display = 'flex';
+                document.getElementById('admin-header-btns').style.display = 'none'; // Öğretmen/İdare butonlarını gizle
+                document.getElementById('display-user-name').innerText = currentUser.name;
+                document.getElementById('display-user-class').innerText = currentUser.class;
+                odevleriGetir();
+            } else {
+                document.getElementById('welcome-screen').style.display = 'flex';
+                document.getElementById('user-bar').style.display = 'none';
+                document.getElementById('admin-header-btns').style.display = 'flex';
+            }
+        }
+
+        function profilSifirla() {
+            if(confirm("Profil bilgileriniz sıfırlanacak ve giriş ekranına dönülecek. Onaylıyor musunuz?")) {
+                localStorage.removeItem('kk_student_profile');
+                currentUser = null;
+                profilUygula();
+            }
+        }
+
         async function bulutVerileriniYukle() {
             if (!supabaseClient) return;
             try {
@@ -347,7 +416,7 @@
         function odevleriGetir() {
             const container = document.getElementById('odev-container');
             if(!container) return;
-            let secilenSinif = document.getElementById('student-class').value;
+            let secilenSinif = currentUser ? currentUser.class : "9A";
             let filtrelenmis = odevler.filter(o => o.sinif === secilenSinif || o.sinif === "Tüm Okul");
             if(filtrelenmis.length === 0) {
                 container.innerHTML = "<p style='color:#888; text-align:center;'>Bu sınıf için ödev bulunmuyor.</p>";
@@ -445,6 +514,7 @@
         function resetTimer() { clearInterval(timer); isRunning = false; timeLeft = 1500; updateTimerDisplay(); }
 
         window.onload = function() {
+            profilUygula();
             bulutVerileriniYukle();
             notlariListele();
         };
