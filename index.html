@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi v1.04 - Mobil Asistan</title>
+    <title>Kandilli Kız Lisesi v1.05 - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -32,14 +32,18 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         header .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
-        header .brand img.logo { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent); background: white; object-fit: contain; }
+        .logo-placeholder { 
+            width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent); 
+            background: #fff color: var(--primary); display: flex; align-items: center; 
+            justify-content: center; font-weight: bold; font-size: 0.85rem;
+        }
         .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         
         .header-btn {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white; padding: 6px 12px; border-radius: 8px;
-            font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            color: white; padding: 6px 10px; border-radius: 8px;
+            font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
         }
 
         .user-bar {
@@ -125,8 +129,8 @@
     <!-- 1. ÖĞRENCİ KARŞILAMA EKRANI -->
     <div id="student-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
-            <img src="https://sahinoguzhan.github.io/kkl/logo.png" style="width:70px; margin-bottom:10px;" alt="KKL Logo" onerror="this.src='https://raw.githubusercontent.com/sahinoguzhan/kkl/main/logo.png'">
-            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.04</span></h2>
+            <i class="fas fa-graduation-cap" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.05</span></h2>
             <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
             
             <input type="text" id="login-student-name" placeholder="Adınız veya Lakabınız">
@@ -151,7 +155,7 @@
     <div id="teacher-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-chalkboard-teacher" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Öğretmen Girişi <span class="version-tag">v1.04</span></h2>
+            <h2>Öğretmen Girişi <span class="version-tag">v1.05</span></h2>
             <p>Öğretmen Profili Oluşturma</p>
             
             <input type="password" id="teacher-pass-input" placeholder="Öğretmen Şifresi">
@@ -174,7 +178,7 @@
     <div id="admin-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>İdare Girişi <span class="version-tag">v1.04</span></h2>
+            <h2>İdare Girişi <span class="version-tag">v1.05</span></h2>
             <p>Yönetici Profili Oluşturma</p>
             
             <input type="password" id="admin-pass-input" placeholder="İdare Şifresi">
@@ -194,11 +198,12 @@
     <!-- HEADER -->
     <header>
         <div class="brand">
-            <img src="https://sahinoguzhan.github.io/kkl/logo.png" class="logo" alt="Logo" onerror="this.src='https://raw.githubusercontent.com/sahinoguzhan/kkl/main/logo.png'">
+            <div class="logo-placeholder">KKL</div>
             <span>Kandilli Kız Lisesi</span>
-            <span class="version-tag">v1.04</span>
+            <span class="version-tag">v1.05</span>
         </div>
-        <div id="admin-header-btns" style="display: flex; gap: 8px;">
+        <div id="admin-header-btns" style="display: flex; gap: 5px;">
+            <button class="header-btn" onclick="openAuthModal('ogrenci')"><i class="fas fa-user-graduate"></i> Öğrenci</button>
             <button class="header-btn" onclick="openAuthModal('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
             <button class="header-btn" onclick="openAuthModal('idare')"><i class="fas fa-user-shield"></i> İdare</button>
         </div>
@@ -270,7 +275,7 @@
             </div>
         </section>
 
-        <!-- ÖĞRETMEN ÖZEL PANELERİ (SEKMELERİ) -->
+        <!-- ÖĞRETMEN ÖZEL PANELERİ -->
         <section id="panel-ogretmen-ekle" class="tab-content">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Ödev veya Duyuru Ekle</h2>
             <div class="card accent-border">
@@ -309,7 +314,7 @@
             <div id="ogretmen-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
         </section>
 
-        <!-- İDARE ÖZEL PANELERİ (SEKMELERİ) -->
+        <!-- İDARE ÖZEL PANELERİ -->
         <section id="panel-idare-ekle" class="tab-content">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> İdare Duyuru & Menü Ekle</h2>
             <div class="card">
@@ -349,12 +354,20 @@
         </section>
     </main>
 
-    <!-- ROL DİNAMİK ALT MENÜ (NAVIGATOR) -->
+    <!-- ROL DİNAMİK ALT MENÜ -->
     <nav id="bottom-nav">
-        <!-- JS tarafında dinamik yüklenir -->
+        <!-- JS tarafında yüklenir -->
     </nav>
 
     <script>
+        // SÜRÜM KONTROLÜ (Kod her değiştiğinde oturumları otomatik temizler)
+        const CURRENT_VERSION = "1.05";
+        const savedVersion = localStorage.getItem('kk_app_version');
+        if (savedVersion !== CURRENT_VERSION) {
+            localStorage.removeItem('kk_active_session');
+            localStorage.setItem('kk_app_version', CURRENT_VERSION);
+        }
+
         const SUPABASE_URL = 'https://npsuvaygtvdoiucfntsc.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wc3V2YXlndHZkb2l1Y2ZudHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2Nzg2MzgsImV4cCI6MjEwNTI1NDYzOH0.oxU8I21HcF4Y97UkPnNnm7TxNxS2fHlJjfoYsGrdM5s';
         
@@ -381,6 +394,7 @@
 
         function openAuthModal(role) {
             closeModals();
+            if(role === 'ogrenci') document.getElementById('student-modal').style.display = 'flex';
             if(role === 'ogretmen') document.getElementById('teacher-modal').style.display = 'flex';
             if(role === 'idare') document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -483,6 +497,7 @@
                     adminHeaderBtns.style.display = 'none';
                     tabDegistir('panel-idare-ekle');
                 }
+                duyurulariGetir();
                 odevleriGetir();
             } else {
                 document.getElementById('student-modal').style.display = 'flex';
@@ -509,7 +524,11 @@
         }
 
         async function bulutVerileriniYukle() {
-            if (!supabaseClient) return;
+            if (!supabaseClient) {
+                duyurulariGetir();
+                odevleriGetir();
+                return;
+            }
             try {
                 let { data, error } = await supabaseClient.from('school_data').select('*');
                 if (data && data.length > 0) {
@@ -526,16 +545,11 @@
                 odevleriGetir();
                 let yElem = document.getElementById('yemek-container');
                 if(yElem) yElem.innerText = yemekMenusu;
-            } catch (e) { console.log('Bulut hatası:', e); }
-        }
-
-        if (supabaseClient) {
-            supabaseClient
-              .channel('schema-db-changes')
-              .on('postgres_changes', { event: '*', schema: 'public', table: 'school_data' }, payload => {
-                bulutVerileriniYukle();
-              })
-              .subscribe();
+            } catch (e) { 
+                console.log('Bulut hatası:', e);
+                duyurulariGetir();
+                odevleriGetir();
+            }
         }
 
         async function bulutaKaydet(id, content) {
