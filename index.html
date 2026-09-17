@@ -6,6 +6,43 @@
     <title>Kandilli Kız Lisesi - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // PANEL AÇMA FONKSİYONUNU ÖNE ALDIK (Tıklama kilitlenmelerini önler)
+        const OGRETMEN_SIFRE = "kandilli_ogretmen";
+        const IDARE_SIFRE = "kandilli_idare";
+
+        function paneliAc(tur) {
+            let mesag = tur === 'ogretmen' ? "Öğretmen Giriş Şifresi:" : "İdare Giriş Şifresi:";
+            let s = prompt(mesag);
+            
+            if (s === null) return; // İptal edilirse çık
+
+            if (tur === 'ogretmen' && s === OGRETMEN_SIFRE) {
+                alert("Öğretmen Paneline Giriş Yapıldı!");
+                tabDegistir('panel-ogretmen');
+            } else if (tur === 'idare' && s === IDARE_SIFRE) {
+                alert("İdare Paneline Giriş Yapıldı!");
+                tabDegistir('panel-idare');
+            } else {
+                alert("Hatalı Şifre!");
+            }
+        }
+
+        function tabDegistir(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            let hedefTab = document.getElementById(tabId);
+            if(hedefTab) {
+                hedefTab.classList.add('active');
+            }
+            if(btn) {
+                btn.classList.add('active');
+            }
+        }
+    </script>
+
     <style>
         :root {
             --primary: #800020;
@@ -26,13 +63,26 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; padding: 15px 18px;
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex; justify-content: space-between; align-items: center;
         }
         header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
         header .brand i { color: var(--accent); font-size: 1.4rem; }
-        header button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
         .class-bar {
             background: #ffffff; padding: 10px 15px;
@@ -102,9 +152,9 @@
             <i class="fas fa-graduation-cap"></i>
             <span>Kandilli Kız Lisesi</span>
         </div>
-        <div>
-            <button onclick="paneliAc('ogretmen')" title="Öğretmen Girişi"><i class="fas fa-chalkboard-teacher"></i></button>
-            <button onclick="paneliAc('idare')" title="İdare Girişi" style="margin-left: 10px;"><i class="fas fa-user-shield"></i></button>
+        <div style="display: flex; gap: 8px;">
+            <button class="header-btn" onclick="paneliAc('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
+            <button class="header-btn" onclick="paneliAc('idare')"><i class="fas fa-user-shield"></i> İdare</button>
         </div>
     </header>
 
@@ -219,10 +269,11 @@
     <script>
         const SUPABASE_URL = 'https://npsuvaygtvdoiucfntsc.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wc3V2YXlndHZkb2l1Y2ZudHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2Nzg2MzgsImV4cCI6MjEwNTI1NDYzOH0.oxU8I21HcF4Y97UkPnNnm7TxNxS2fHlJjfoYsGrdM5s';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        const OGRETMEN_SIFRE = "kandilli_ogretmen";
-        const IDARE_SIFRE = "kandilli_idare";
+        
+        let supabaseClient;
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
 
         let duyurular = [];
         let odevler = [];
@@ -230,8 +281,9 @@
         let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
 
         async function bulutVerileriniYukle() {
+            if (!supabaseClient) return;
             try {
-                let { data, error } = await supabase.from('school_data').select('*');
+                let { data, error } = await supabaseClient.from('school_data').select('*');
                 if (data && data.length > 0) {
                     data.forEach(item => {
                         if (item.id === 'duyurular') duyurular = item.content || [];
@@ -241,38 +293,29 @@
                 }
                 duyurulariGetir();
                 odevleriGetir();
-                document.getElementById('yemek-container').innerText = yemekMenusu;
+                let yElem = document.getElementById('yemek-container');
+                if(yElem) yElem.innerText = yemekMenusu;
             } catch (e) { console.log('Bulut hatası:', e); }
         }
 
-        // Canlı Dinleyici (Realtime)
-        supabase
-          .channel('schema-db-changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'school_data' }, payload => {
-            bulutVerileriniYukle();
-          })
-          .subscribe();
+        if (supabaseClient) {
+            supabaseClient
+              .channel('schema-db-changes')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'school_data' }, payload => {
+                bulutVerileriniYukle();
+              })
+              .subscribe();
+        }
 
         async function bulutaKaydet(id, content) {
-            await supabase.from('school_data').upsert({ id: id, content: content });
-        }
-
-        function tabDegistir(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(btn) btn.classList.add('active');
-        }
-
-        function paneliAc(tur) {
-            let s = prompt(tur === 'ogretmen' ? "Öğretmen Şifresi:" : "İdare Şifresi:");
-            if(tur === 'ogretmen' && s === OGRETMEN_SIFRE) tabDegistir('panel-ogretmen');
-            else if(tur === 'idare' && s === IDARE_SIFRE) tabDegistir('panel-idare');
-            else if(s !== null) alert("Hatalı Şifre!");
+            if (supabaseClient) {
+                await supabaseClient.from('school_data').upsert({ id: id, content: content });
+            }
         }
 
         function duyurulariGetir() {
             const container = document.getElementById('duyuru-container');
+            if(!container) return;
             if(duyurular.length === 0) {
                 container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz yayınlanmış duyuru yok.</p>";
                 return;
@@ -303,6 +346,7 @@
 
         function odevleriGetir() {
             const container = document.getElementById('odev-container');
+            if(!container) return;
             let secilenSinif = document.getElementById('student-class').value;
             let filtrelenmis = odevler.filter(o => o.sinif === secilenSinif || o.sinif === "Tüm Okul");
             if(filtrelenmis.length === 0) {
@@ -374,6 +418,7 @@
 
         function notlariListele() {
             const tbody = document.getElementById('not-tablosu');
+            if(!tbody) return;
             tbody.innerHTML = "";
             let toplam = 0;
             dersNotlari.forEach(n => {
@@ -399,8 +444,10 @@
         function pauseTimer() { clearInterval(timer); isRunning = false; }
         function resetTimer() { clearInterval(timer); isRunning = false; timeLeft = 1500; updateTimerDisplay(); }
 
-        bulutVerileriniYukle();
-        notlariListele();
+        window.onload = function() {
+            bulutVerileriniYukle();
+            notlariListele();
+        };
     </script>
 </body>
 </html>
