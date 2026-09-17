@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi v1.05 - Mobil Asistan</title>
+    <title>Kandilli Kız Lisesi v1.07 - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -34,7 +34,7 @@
         header .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
         .logo-placeholder { 
             width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent); 
-            background: #fff color: var(--primary); display: flex; align-items: center; 
+            background: #fff; color: var(--primary); display: flex; align-items: center; 
             justify-content: center; font-weight: bold; font-size: 0.85rem;
         }
         .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
@@ -67,6 +67,13 @@
         .modal-card h2 { color: var(--primary-dark); margin-bottom: 8px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .modal-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 18px; }
 
+        .image-lightbox {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); z-index: 3000; display: none;
+            align-items: center; justify-content: center; padding: 15px;
+        }
+        .image-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
         main { padding: 15px; max-width: 650px; margin: 0 auto; }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
@@ -78,12 +85,28 @@
             border-left: 4px solid var(--primary); position: relative;
         }
         .card.accent-border { border-left-color: var(--accent); }
-        .card-title { font-weight: 700; color: var(--primary-dark); font-size: 1.05rem; }
+        .card-title { font-weight: 700; color: var(--primary-dark); font-size: 1.05rem; padding-right: 50px; }
         .card-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 8px; }
         .card-body { font-size: 0.92rem; line-height: 1.5; color: #444; }
+        
+        .item-number-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: var(--primary); color: white; font-size: 0.75rem;
+            font-weight: bold; padding: 2px 8px; border-radius: 12px;
+        }
+
+        .delete-post-btn {
+            position: absolute; top: 12px; right: 50px;
+            color: var(--danger); background: #fdf2f2; border: 1px solid #f8b4b4;
+            width: 26px; height: 26px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.8rem; transition: all 0.2s;
+        }
+        .delete-post-btn:hover { background: var(--danger); color: white; }
+
         .card-attachment { margin-top: 10px; }
-        .card-attachment img { max-width: 100%; border-radius: 8px; border: 1px solid #ddd; }
-        .pdf-link { display: inline-flex; align-items: center; gap: 6px; background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-top: 8px; }
+        .card-attachment img { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd; cursor: zoom-in; object-fit: cover; }
+        .pdf-link { display: inline-flex; align-items: center; gap: 6px; background: #e74c3c; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-top: 8px; font-weight: 600; cursor: pointer; }
 
         input, select, textarea, button.btn-submit {
             width: 100%; padding: 11px; margin-top: 8px;
@@ -97,7 +120,7 @@
         .checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; text-align: left; }
         .checkbox-label { font-size: 0.8rem; background: #f0f3f6; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
-        .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; position: relative; }
         .todo-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
         .todo-item.completed .todo-text { text-decoration: line-through; color: var(--gray); }
 
@@ -126,11 +149,16 @@
 </head>
 <body>
 
+    <!-- TAM EKRAN RESİM ÖNİZLEME -->
+    <div id="image-lightbox" class="image-lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Önizleme">
+    </div>
+
     <!-- 1. ÖĞRENCİ KARŞILAMA EKRANI -->
     <div id="student-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-graduation-cap" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.05</span></h2>
+            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.07</span></h2>
             <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
             
             <input type="text" id="login-student-name" placeholder="Adınız veya Lakabınız">
@@ -155,7 +183,7 @@
     <div id="teacher-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-chalkboard-teacher" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Öğretmen Girişi <span class="version-tag">v1.05</span></h2>
+            <h2>Öğretmen Girişi <span class="version-tag">v1.07</span></h2>
             <p>Öğretmen Profili Oluşturma</p>
             
             <input type="password" id="teacher-pass-input" placeholder="Öğretmen Şifresi">
@@ -178,7 +206,7 @@
     <div id="admin-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>İdare Girişi <span class="version-tag">v1.05</span></h2>
+            <h2>İdare Girişi <span class="version-tag">v1.07</span></h2>
             <p>Yönetici Profili Oluşturma</p>
             
             <input type="password" id="admin-pass-input" placeholder="İdare Şifresi">
@@ -200,7 +228,7 @@
         <div class="brand">
             <div class="logo-placeholder">KKL</div>
             <span>Kandilli Kız Lisesi</span>
-            <span class="version-tag">v1.05</span>
+            <span class="version-tag">v1.07</span>
         </div>
         <div id="admin-header-btns" style="display: flex; gap: 5px;">
             <button class="header-btn" onclick="openAuthModal('ogrenci')"><i class="fas fa-user-graduate"></i> Öğrenci</button>
@@ -235,10 +263,11 @@
         </section>
 
         <section id="program" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calendar-alt"></i> Ders Programı & Menü</h2>
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calendar-alt"></i> Ders Programı & Yemek Menüsü</h2>
             <div class="card">
-                <div class="card-title"><i class="fas fa-utensils"></i> Günün Yemek Menüsü</div>
+                <div class="card-title"><i class="fas fa-utensils"></i> Haftalık Yemek Menüsü</div>
                 <div class="card-body" id="yemek-container" style="margin-top: 6px; font-weight:600;">Menü eklenmedi.</div>
+                <div id="yemek-file-container"></div>
             </div>
         </section>
 
@@ -286,20 +315,23 @@
                 </select>
 
                 <input type="text" id="ogretmen-ders" placeholder="Ders / Konu Adı (Örn: Fizik)">
-                <input type="text" id="ogretmen-tarih" placeholder="Son Teslim Tarihi / Geçerlilik Tarihi">
+                
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Son Teslim / Geçerlilik Tarihi:</label>
+                <input type="date" id="ogretmen-tarih">
+
                 <textarea id="ogretmen-icerik" rows="3" placeholder="Açıklama / Detaylar..."></textarea>
 
                 <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">2. Hedef Sınıf / Şubeler:</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="ALL"> Tüm Okul</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="9A"> 9-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="9B"> 9-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="10A"> 10-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="10B"> 10-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="11A"> 11-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="11B"> 11-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="12A"> 12-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="12B"> 12-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="ALL" id="cb-all-ogretmen" onchange="toggleAllClasses('ogretmen')"> Tüm Okul</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="9A" onchange="checkSubClasses('ogretmen')"> 9-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="9B" onchange="checkSubClasses('ogretmen')"> 9-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="10A" onchange="checkSubClasses('ogretmen')"> 10-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="10B" onchange="checkSubClasses('ogretmen')"> 10-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="11A" onchange="checkSubClasses('ogretmen')"> 11-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="11B" onchange="checkSubClasses('ogretmen')"> 11-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="12A" onchange="checkSubClasses('ogretmen')"> 12-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="12B" onchange="checkSubClasses('ogretmen')"> 12-B</label>
                 </div>
 
                 <label style="font-size:0.85rem; font-weight:bold; margin-top:12px; display:block;">3. Resim veya PDF Ekleyin (Opsiyonel):</label>
@@ -324,15 +356,15 @@
                 
                 <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Hedef Sınıflar:</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="ALL" checked> Tüm Okul</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="9A"> 9-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="9B"> 9-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="10A"> 10-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="10B"> 10-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="11A"> 11-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="11B"> 11-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="12A"> 12-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="12B"> 12-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="ALL" id="cb-all-idare" checked onchange="toggleAllClasses('idare')"> Tüm Okul</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="9A" checked disabled onchange="checkSubClasses('idare')"> 9-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="9B" checked disabled onchange="checkSubClasses('idare')"> 9-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="10A" checked disabled onchange="checkSubClasses('idare')"> 10-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="10B" checked disabled onchange="checkSubClasses('idare')"> 10-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="11A" checked disabled onchange="checkSubClasses('idare')"> 11-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="11B" checked disabled onchange="checkSubClasses('idare')"> 11-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="12A" checked disabled onchange="checkSubClasses('idare')"> 12-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="12B" checked disabled onchange="checkSubClasses('idare')"> 12-B</label>
                 </div>
 
                 <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Görsel veya PDF Dosyası:</label>
@@ -342,26 +374,34 @@
             </div>
 
             <div class="card">
-                <div class="card-title">2. Günün Yemek Menüsü</div>
-                <input type="text" id="idare-yemek" placeholder="Yemek Listesi...">
-                <button class="btn-submit" onclick="yemekGuncelle()">Menüyü Güncelle</button>
+                <div class="card-title">2. Haftalık Yemek Menüsü</div>
+                <textarea id="idare-yemek" rows="2" placeholder="Menü Detayları / Açıklama..."></textarea>
+                
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Menü Görseli veya PDF Listesi:</label>
+                <input type="file" id="idare-yemek-file" accept="image/*,.pdf">
+
+                <button class="btn-submit" onclick="yemekGuncelle()">Haftalık Menüyü Güncelle</button>
             </div>
         </section>
 
         <section id="panel-idare-liste" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-list-alt"></i> Yayınlanan İdare Duyuruları</h2>
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-list-alt"></i> İçerik Yönetim Paneli</h2>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn-submit" style="margin-top:0; background:var(--primary);" onclick="idarePostlariniGetir('my')">Benim Duyurularım</button>
+                <button class="btn-submit" style="margin-top:0; background:var(--accent); color:var(--primary-dark);" onclick="idarePostlariniGetir('all')"><i class="fas fa-shield-alt"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)</button>
+            </div>
+
             <div id="idare-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
         </section>
     </main>
 
     <!-- ROL DİNAMİK ALT MENÜ -->
-    <nav id="bottom-nav">
-        <!-- JS tarafında yüklenir -->
-    </nav>
+    <nav id="bottom-nav"></nav>
 
     <script>
-        // SÜRÜM KONTROLÜ (Kod her değiştiğinde oturumları otomatik temizler)
-        const CURRENT_VERSION = "1.05";
+        // SÜRÜM KONTROLÜ
+        const CURRENT_VERSION = "1.07";
         const savedVersion = localStorage.getItem('kk_app_version');
         if (savedVersion !== CURRENT_VERSION) {
             localStorage.removeItem('kk_active_session');
@@ -381,10 +421,51 @@
 
         let duyurular = [];
         let odevler = [];
-        let yemekMenusu = "";
+        let yemekData = { text: "Menü eklenmedi.", file: null };
         let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
 
         let activeSession = JSON.parse(localStorage.getItem('kk_active_session')) || null;
+
+        // "Tüm Okul" - Şube Seçim Çakışma Önleyici Mantık
+        function toggleAllClasses(role) {
+            const allCb = document.getElementById(role === 'ogretmen' ? 'cb-all-ogretmen' : 'cb-all-idare');
+            const subCbs = document.querySelectorAll(role === 'ogretmen' ? '.cls-sub-ogretmen' : '.cls-sub-idare');
+            
+            subCbs.forEach(cb => {
+                cb.checked = allCb.checked;
+                cb.disabled = allCb.checked; // Tüm okul seçiliyken şubeler pasifleşir
+            });
+        }
+
+        function checkSubClasses(role) {
+            const allCb = document.getElementById(role === 'ogretmen' ? 'cb-all-ogretmen' : 'cb-all-idare');
+            const subCbs = document.querySelectorAll(role === 'ogretmen' ? '.cls-sub-ogretmen' : '.cls-sub-idare');
+            let allChecked = true;
+            subCbs.forEach(cb => { if(!cb.checked) allChecked = false; });
+            allCb.checked = allChecked;
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('image-lightbox').style.display = 'flex';
+        }
+        function closeLightbox() {
+            document.getElementById('image-lightbox').style.display = 'none';
+        }
+
+        function openPdf(base64Data) {
+            const arr = base64Data.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            const blob = new Blob([u8arr], { type: mime });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
 
         function closeModals() {
             document.getElementById('student-modal').style.display = 'none';
@@ -466,7 +547,7 @@
             } else if(activeSession.role === 'admin') {
                 nav.innerHTML = `
                     <button class="nav-btn active" onclick="tabDegistir('panel-idare-ekle', this)"><i class="fas fa-bullhorn"></i>Duyuru/Menü Ekle</button>
-                    <button class="nav-btn" onclick="tabDegistir('panel-idare-liste', this); idarePostlariniGetir();"><i class="fas fa-list-alt"></i>Yayınlananlar</button>
+                    <button class="nav-btn" onclick="tabDegistir('panel-idare-liste', this); idarePostlariniGetir('my');"><i class="fas fa-list-alt"></i>İçerik Yönetimi</button>
                     <button class="nav-btn" onclick="tabDegistir('duyurular', this)"><i class="fas fa-eye"></i>Öğrenci Akışı</button>
                 `;
             }
@@ -475,6 +556,11 @@
         function sessionUygula() {
             closeModals();
             renderBottomNav();
+            
+            const today = new Date().toISOString().split('T')[0];
+            const tInput = document.getElementById('ogretmen-tarih');
+            if(tInput) tInput.value = today;
+
             if(activeSession) {
                 document.getElementById('user-bar').style.display = 'flex';
                 let infoElem = document.getElementById('display-user-info');
@@ -525,9 +611,7 @@
 
         async function bulutVerileriniYukle() {
             if (!supabaseClient) {
-                duyurulariGetir();
-                odevleriGetir();
-                return;
+                duyurulariGetir(); odevleriGetir(); return;
             }
             try {
                 let { data, error } = await supabaseClient.from('school_data').select('*');
@@ -535,7 +619,7 @@
                     data.forEach(item => {
                         if (item.id === 'duyurular') duyurular = item.content || [];
                         if (item.id === 'odevler') odevler = item.content || [];
-                        if (item.id === 'yemek') yemekMenusu = item.content || "Menü eklenmedi.";
+                        if (item.id === 'yemek') yemekData = item.content || { text: "Menü eklenmedi.", file: null };
                     });
                 }
                 duyurular.sort((a,b) => b.id - a.id);
@@ -543,12 +627,10 @@
 
                 duyurulariGetir();
                 odevleriGetir();
-                let yElem = document.getElementById('yemek-container');
-                if(yElem) yElem.innerText = yemekMenusu;
+                yemekMenusuGetir();
             } catch (e) { 
                 console.log('Bulut hatası:', e);
-                duyurulariGetir();
-                odevleriGetir();
+                duyurulariGetir(); odevleriGetir();
             }
         }
 
@@ -573,18 +655,21 @@
                 return;
             }
             container.innerHTML = "";
-            filtrelenmis.forEach(d => {
+            let totalCount = filtrelenmis.length;
+            filtrelenmis.forEach((d, index) => {
+                let seqNum = totalCount - index; // Artan Sıra Numarası (#1, #2...)
                 let fileHtml = "";
                 if(d.file) {
                     if(d.file.type.includes("pdf")) {
-                        fileHtml = `<div class="card-attachment"><a href="${d.file.data}" download="${d.file.name}" class="pdf-link"><i class="fas fa-file-pdf"></i> ${d.file.name} (PDF İndir)</a></div>`;
+                        fileHtml = `<div class="card-attachment"><button onclick="openPdf('${d.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${d.file.name} (PDF'yi Aç)</button></div>`;
                     } else {
-                        fileHtml = `<div class="card-attachment"><img src="${d.file.data}" alt="Görsel"></div>`;
+                        fileHtml = `<div class="card-attachment"><img src="${d.file.data}" alt="Görsel" onclick="openLightbox('${d.file.data}')"></div>`;
                     }
                 }
 
                 container.innerHTML += `
                     <div class="card">
+                        <span class="item-number-badge">#${seqNum}</span>
                         <div class="card-title">${d.baslik}</div>
                         <div class="card-date"><i class="far fa-clock"></i> ${d.tarih} - <span style="color:var(--primary);">${d.author || 'İdare'}</span></div>
                         <div class="card-body">${d.icerik}</div>
@@ -608,18 +693,21 @@
                 return;
             }
             container.innerHTML = "";
-            filtrelenmis.forEach(o => {
+            let totalCount = filtrelenmis.length;
+            filtrelenmis.forEach((o, index) => {
+                let seqNum = totalCount - index;
                 let fileHtml = "";
                 if(o.file) {
                     if(o.file.type.includes("pdf")) {
-                        fileHtml = `<div class="card-attachment"><a href="${o.file.data}" download="${o.file.name}" class="pdf-link"><i class="fas fa-file-pdf"></i> ${o.file.name} (PDF İndir)</a></div>`;
+                        fileHtml = `<div class="card-attachment"><button onclick="openPdf('${o.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${o.file.name} (PDF'yi Aç)</button></div>`;
                     } else {
-                        fileHtml = `<div class="card-attachment"><img src="${o.file.data}" alt="Görsel"></div>`;
+                        fileHtml = `<div class="card-attachment"><img src="${o.file.data}" alt="Görsel" onclick="openLightbox('${o.file.data}')"></div>`;
                     }
                 }
 
                 container.innerHTML += `
                     <div class="todo-item ${o.done ? 'completed' : ''}">
+                        <span class="item-number-badge" style="top:5px; right:5px;">#${seqNum}</span>
                         <input type="checkbox" ${o.done ? 'checked' : ''} onchange="odevDurumDegis(${o.id})">
                         <div class="todo-text" style="width:100%;">
                             <strong>[${o.ders}]</strong> ${o.icerik}
@@ -631,18 +719,42 @@
             });
         }
 
+        function yemekMenusuGetir() {
+            let yElem = document.getElementById('yemek-container');
+            let fElem = document.getElementById('yemek-file-container');
+            if(!yElem) return;
+            
+            yElem.innerText = typeof yemekData === 'string' ? yemekData : (yemekData.text || "Menü eklenmedi.");
+            fElem.innerHTML = "";
+
+            if(yemekData && yemekData.file) {
+                if(yemekData.file.type.includes("pdf")) {
+                    fElem.innerHTML = `<div class="card-attachment"><button onclick="openPdf('${yemekData.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${yemekData.file.name} (Haftalık Yemek Menüsü PDF)</button></div>`;
+                } else {
+                    fElem.innerHTML = `<div class="card-attachment"><img src="${yemekData.file.data}" alt="Yemek Menüsü" onclick="openLightbox('${yemekData.file.data}')"></div>`;
+                }
+            }
+        }
+
         async function ogretmenPaylasimYap() {
             let postType = document.getElementById('ogretmen-post-type').value;
             let ders = document.getElementById('ogretmen-ders').value.trim();
-            let tarih = document.getElementById('ogretmen-tarih').value.trim();
+            let tarihRaw = document.getElementById('ogretmen-tarih').value;
             let icerik = document.getElementById('ogretmen-icerik').value.trim();
             let fileInput = document.getElementById('ogretmen-file');
 
             let selectedClasses = [];
-            document.querySelectorAll('.cls-cb:checked').forEach(cb => selectedClasses.push(cb.value));
+            let allCb = document.getElementById('cb-all-ogretmen');
+            if(allCb && allCb.checked) {
+                selectedClasses = ["ALL"];
+            } else {
+                document.querySelectorAll('.cls-sub-ogretmen:checked').forEach(cb => selectedClasses.push(cb.value));
+            }
             if(selectedClasses.length === 0) selectedClasses = ["ALL"];
 
             if(!ders || !icerik) return alert("Lütfen ders/konu adını ve açıklamayı yazın.");
+
+            let tarihStr = tarihRaw ? new Date(tarihRaw).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR');
 
             let fileObj = null;
             if(fileInput.files.length > 0) {
@@ -652,7 +764,7 @@
             let newItem = {
                 id: Date.now(),
                 ders: ders,
-                tarih: tarih || new Date().toLocaleDateString('tr-TR'),
+                tarih: tarihStr,
                 icerik: icerik,
                 author: activeSession ? `${activeSession.name} (${activeSession.detail})` : "Öğretmen",
                 targetClasses: selectedClasses,
@@ -672,7 +784,6 @@
             }
 
             document.getElementById('ogretmen-ders').value = "";
-            document.getElementById('ogretmen-tarih').value = "";
             document.getElementById('ogretmen-icerik').value = "";
             fileInput.value = "";
 
@@ -694,9 +805,13 @@
                 return;
             }
             container.innerHTML = "";
-            myPosts.forEach(p => {
+            let totalCount = myPosts.length;
+            myPosts.forEach((p, index) => {
+                let seqNum = totalCount - index;
                 container.innerHTML += `
                     <div class="card">
+                        <span class="item-number-badge">#${seqNum}</span>
+                        <button class="delete-post-btn" title="Sil" onclick="postSil(${p.id})"><i class="fas fa-trash"></i></button>
                         <div class="card-title">${p.ders || p.baslik}</div>
                         <div class="card-date">Tarih: ${p.tarih} | Hedef: ${p.targetClasses ? p.targetClasses.join(', ') : 'Tüm Okul'}</div>
                         <div class="card-body">${p.icerik}</div>
@@ -711,7 +826,12 @@
             let fileInput = document.getElementById('idare-file');
 
             let selectedClasses = [];
-            document.querySelectorAll('.idare-cls-cb:checked').forEach(cb => selectedClasses.push(cb.value));
+            let allCb = document.getElementById('cb-all-idare');
+            if(allCb && allCb.checked) {
+                selectedClasses = ["ALL"];
+            } else {
+                document.querySelectorAll('.cls-sub-idare:checked').forEach(cb => selectedClasses.push(cb.value));
+            }
             if(selectedClasses.length === 0) selectedClasses = ["ALL"];
 
             if(!b || !i) return alert("Başlık ve içeriği yazın.");
@@ -739,27 +859,65 @@
             fileInput.value = "";
 
             tabDegistir('panel-idare-liste');
-            idarePostlariniGetir();
+            idarePostlariniGetir('my');
         }
 
-        function idarePostlariniGetir() {
+        function idarePostlariniGetir(mode = 'my') {
             const container = document.getElementById('idare-postlar-container');
             if(!container) return;
             container.innerHTML = "";
-            duyurular.sort((a,b) => b.id - a.id);
-            if(duyurular.length === 0) {
-                container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz idare duyurusu bulunmuyor.</p>";
+
+            let targetPosts = [];
+            if(mode === 'all') {
+                // SÜPER İDARECİ MODU: Tüm Öğretmen ve İdare içeriklerini göster
+                targetPosts = duyurular.concat(odevler);
+            } else {
+                let myName = activeSession ? activeSession.name : "";
+                targetPosts = duyurular.filter(d => d.author && d.author.includes(myName));
+            }
+
+            targetPosts.sort((a,b) => b.id - a.id);
+
+            if(targetPosts.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>Gösterilebilecek içerik bulunamadı.</p>";
                 return;
             }
-            duyurular.forEach(d => {
+
+            let totalCount = targetPosts.length;
+            targetPosts.forEach((d, index) => {
+                let seqNum = totalCount - index;
                 container.innerHTML += `
                     <div class="card">
-                        <div class="card-title">${d.baslik}</div>
-                        <div class="card-date">${d.tarih} | Yazan: ${d.author || 'İdare'}</div>
+                        <span class="item-number-badge">#${seqNum}</span>
+                        <button class="delete-post-btn" title="Sil" onclick="postSil(${d.id})"><i class="fas fa-trash"></i></button>
+                        <div class="card-title">${d.baslik || d.ders}</div>
+                        <div class="card-date">${d.tarih} | Yazan: ${d.author || 'İdare'} | Hedef: ${d.targetClasses ? d.targetClasses.join(', ') : 'Tüm Okul'}</div>
                         <div class="card-body">${d.icerik}</div>
                     </div>
                 `;
             });
+        }
+
+        async function postSil(id) {
+            if(!confirm("Bu paylaşımı silmek istediğinize emin misiniz?")) return;
+            
+            let odevIdx = odevler.findIndex(o => o.id === id);
+            if(odevIdx !== -1) {
+                odevler.splice(odevIdx, 1);
+                await bulutaKaydet('odevler', odevler);
+            } else {
+                let duyuruIdx = duyurular.findIndex(d => d.id === id);
+                if(duyuruIdx !== -1) {
+                    duyurular.splice(duyuruIdx, 1);
+                    await bulutaKaydet('duyurular', duyurular);
+                }
+            }
+
+            alert("Paylaşım silindi.");
+            if(activeSession && activeSession.role === 'teacher') ogretmenPostlariniGetir();
+            if(activeSession && activeSession.role === 'admin') idarePostlariniGetir('my');
+            duyurulariGetir();
+            odevleriGetir();
         }
 
         function odevDurumDegis(id) {
@@ -769,12 +927,24 @@
         }
 
         async function yemekGuncelle() {
-            let y = document.getElementById('idare-yemek').value.trim();
-            if(!y) return alert("Menü metnini girin.");
-            yemekMenusu = y;
-            await bulutaKaydet('yemek', yemekMenusu);
-            document.getElementById('yemek-container').innerText = yemekMenusu;
-            alert("Menü güncellendi!");
+            let textVal = document.getElementById('idare-yemek').value.trim();
+            let fileInput = document.getElementById('idare-yemek-file');
+
+            let fileObj = null;
+            if(fileInput.files.length > 0) {
+                fileObj = await getBase64(fileInput.files[0]);
+            } else if(typeof yemekData === 'object' && yemekData.file) {
+                fileObj = yemekData.file;
+            }
+
+            yemekData = {
+                text: textVal || "Haftalık Yemek Menüsü",
+                file: fileObj
+            };
+
+            await bulutaKaydet('yemek', yemekData);
+            yemekMenusuGetir();
+            alert("Haftalık Yemek Menüsü güncellendi!");
         }
 
         function notEkle() {
