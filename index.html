@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi v1.02 - Mobil Asistan</title>
+    <title>Kandilli Kız Lisesi v1.04 - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -26,14 +26,14 @@
 
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white; padding: 15px 18px;
+            color: white; padding: 12px 16px;
             position: sticky; top: 0; z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex; justify-content: space-between; align-items: center;
         }
         header .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
-        header .brand i { color: var(--accent); font-size: 1.3rem; }
-        header .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        header .brand img.logo { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent); background: white; object-fit: contain; }
+        .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         
         .header-btn {
             background: rgba(255, 255, 255, 0.15);
@@ -48,20 +48,19 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid var(--accent);
         }
-        .user-info { font-size: 0.9rem; font-weight: 600; color: var(--primary-dark); }
+        .user-info { font-size: 0.9rem; font-weight: 600; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; }
         .logout-btn { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
 
-        /* GİRİŞ KARŞILAMA EKRANLARI (MODAL) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(88, 0, 22, 0.95);
             z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .modal-card {
-            background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 400px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 420px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;
         }
-        .modal-card h2 { color: var(--primary-dark); margin-bottom: 8px; font-size: 1.3rem; }
+        .modal-card h2 { color: var(--primary-dark); margin-bottom: 8px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .modal-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 18px; }
 
         main { padding: 15px; max-width: 650px; margin: 0 auto; }
@@ -72,12 +71,15 @@
         .card {
             background: var(--card); border-radius: 12px; padding: 16px;
             margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid var(--primary); position: relative;
         }
         .card.accent-border { border-left-color: var(--accent); }
         .card-title { font-weight: 700; color: var(--primary-dark); font-size: 1.05rem; }
         .card-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 8px; }
         .card-body { font-size: 0.92rem; line-height: 1.5; color: #444; }
+        .card-attachment { margin-top: 10px; }
+        .card-attachment img { max-width: 100%; border-radius: 8px; border: 1px solid #ddd; }
+        .pdf-link { display: inline-flex; align-items: center; gap: 6px; background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-top: 8px; }
 
         input, select, textarea, button.btn-submit {
             width: 100%; padding: 11px; margin-top: 8px;
@@ -87,6 +89,9 @@
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 14px;
         }
+
+        .checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; text-align: left; }
+        .checkbox-label { font-size: 0.8rem; background: #f0f3f6; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
         .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
         .todo-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
@@ -107,10 +112,11 @@
         }
         nav button {
             background: none; border: none; color: #888; font-size: 0.7rem;
-            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 20%;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 25%;
+            transition: color 0.2s;
         }
         nav button.active { color: var(--primary); font-weight: 700; }
-        nav button i { font-size: 1.25rem; }
+        nav button i { font-size: 1.2rem; }
         .link-btn { background: none; border: none; color: var(--gray); text-decoration: underline; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
@@ -119,9 +125,9 @@
     <!-- 1. ÖĞRENCİ KARŞILAMA EKRANI -->
     <div id="student-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
-            <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Kandilli Kız Lisesi</h2>
-            <p>Öğrenci Girişi (Kurulum Bir Defalıktır)</p>
+            <img src="https://sahinoguzhan.github.io/kkl/logo.png" style="width:70px; margin-bottom:10px;" alt="KKL Logo" onerror="this.src='https://raw.githubusercontent.com/sahinoguzhan/kkl/main/logo.png'">
+            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.04</span></h2>
+            <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
             
             <input type="text" id="login-student-name" placeholder="Adınız veya Lakabınız">
             <select id="login-student-class">
@@ -145,7 +151,7 @@
     <div id="teacher-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-chalkboard-teacher" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Öğretmen Girişi</h2>
+            <h2>Öğretmen Girişi <span class="version-tag">v1.04</span></h2>
             <p>Öğretmen Profili Oluşturma</p>
             
             <input type="password" id="teacher-pass-input" placeholder="Öğretmen Şifresi">
@@ -154,7 +160,7 @@
                 <option value="">Branşınızı Seçin</option>
                 <option value="Fizik">Fizik</option><option value="Matematik">Matematik</option>
                 <option value="Kimya">Kimya</option><option value="Biyoloji">Biyoloji</option>
-                <option value="Türk Dili ve Edebiyatı">Edebiyat</option><option value="Tarih">Tarih</option>
+                <option value="Edebiyat">Türk Dili ve Edebiyatı</option><option value="Tarih">Tarih</option>
                 <option value="Coğrafya">Coğrafya</option><option value="İngilizce">İngilizce</option>
                 <option value="Rehberlik">Rehberlik</option><option value="Diğer">Diğer</option>
             </select>
@@ -168,7 +174,7 @@
     <div id="admin-modal" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>İdare Girişi</h2>
+            <h2>İdare Girişi <span class="version-tag">v1.04</span></h2>
             <p>Yönetici Profili Oluşturma</p>
             
             <input type="password" id="admin-pass-input" placeholder="İdare Şifresi">
@@ -188,9 +194,9 @@
     <!-- HEADER -->
     <header>
         <div class="brand">
-            <i class="fas fa-graduation-cap"></i>
+            <img src="https://sahinoguzhan.github.io/kkl/logo.png" class="logo" alt="Logo" onerror="this.src='https://raw.githubusercontent.com/sahinoguzhan/kkl/main/logo.png'">
             <span>Kandilli Kız Lisesi</span>
-            <span class="version-tag">v1.02</span>
+            <span class="version-tag">v1.04</span>
         </div>
         <div id="admin-header-btns" style="display: flex; gap: 8px;">
             <button class="header-btn" onclick="openAuthModal('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
@@ -203,11 +209,11 @@
         <div class="user-info">
             <i class="fas fa-user-circle"></i> <span id="display-user-info">Profil Bilgisi</span>
         </div>
-        <!-- Sadece Öğretmen ve İdalede Görünür Çıkış Butonu -->
         <button class="logout-btn" id="logout-btn" style="display:none;" onclick="oturumKapat()">Çıkış Yap</button>
     </div>
 
     <main>
+        <!-- ÖĞRENCİ SEKMELERİ -->
         <section id="duyurular" class="tab-content active">
             <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> Okul Duyuruları</h2>
             <div id="duyuru-container"><p style="text-align:center; color:#888;">Henüz yayınlanmış duyuru yok.</p></div>
@@ -264,45 +270,88 @@
             </div>
         </section>
 
-        <section id="panel-ogretmen" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-pen"></i> Öğretmen Ödev Paneli</h2>
+        <!-- ÖĞRETMEN ÖZEL PANELERİ (SEKMELERİ) -->
+        <section id="panel-ogretmen-ekle" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Ödev veya Duyuru Ekle</h2>
             <div class="card accent-border">
-                <input type="text" id="ogretmen-ders" placeholder="Ders Adı (Örn: Fizik)">
-                <select id="ogretmen-sinif">
-                    <option value="Tüm Okul">Tüm Sınıflar</option>
-                    <option value="9A">9-A</option><option value="9B">9-B</option>
-                    <option value="10A">10-A</option><option value="10B">10-B</option>
-                    <option value="11A">11-A</option><option value="11B">11-B</option>
-                    <option value="12A">12-A</option><option value="12B">12-B</option>
+                <label style="font-size:0.85rem; font-weight:bold;">1. Paylaşım Türü:</label>
+                <select id="ogretmen-post-type">
+                    <option value="odev">Ödev Ver</option>
+                    <option value="duyuru">Duyuru Yap</option>
                 </select>
-                <input type="text" id="ogretmen-tarih" placeholder="Son Teslim Tarihi">
-                <textarea id="ogretmen-icerik" rows="3" placeholder="Ödev Detayı..."></textarea>
-                <button class="btn-submit" onclick="odevYayinla()">Ödevi Canlıya Gönder</button>
+
+                <input type="text" id="ogretmen-ders" placeholder="Ders / Konu Adı (Örn: Fizik)">
+                <input type="text" id="ogretmen-tarih" placeholder="Son Teslim Tarihi / Geçerlilik Tarihi">
+                <textarea id="ogretmen-icerik" rows="3" placeholder="Açıklama / Detaylar..."></textarea>
+
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">2. Hedef Sınıf / Şubeler:</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="ALL"> Tüm Okul</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="9A"> 9-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="9B"> 9-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="10A"> 10-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="10B"> 10-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="11A"> 11-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="11B"> 11-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="12A"> 12-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="12B"> 12-B</label>
+                </div>
+
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:12px; display:block;">3. Resim veya PDF Ekleyin (Opsiyonel):</label>
+                <input type="file" id="ogretmen-file" accept="image/*,.pdf">
+
+                <button class="btn-submit" onclick="ogretmenPaylasimYap()">Canlıya Yayınla</button>
             </div>
         </section>
 
-        <section id="panel-idare" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-sliders-h"></i> İdare Yönetim Paneli</h2>
+        <section id="panel-ogretmen-liste" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-history"></i> Yayınladığım Ödev & Duyurular</h2>
+            <div id="ogretmen-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
+        </section>
+
+        <!-- İDARE ÖZEL PANELERİ (SEKMELERİ) -->
+        <section id="panel-idare-ekle" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> İdare Duyuru & Menü Ekle</h2>
             <div class="card">
-                <div class="card-title">Duyuru Yayınla</div>
+                <div class="card-title">1. Okul Duyurusu Yayınla</div>
                 <input type="text" id="idare-baslik" placeholder="Duyuru Başlığı">
                 <textarea id="idare-icerik" rows="3" placeholder="Duyuru Metni..."></textarea>
-                <button class="btn-submit" onclick="duyuruYayinla()">Duyuruyu Yayınla</button>
+                
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Hedef Sınıflar:</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="ALL" checked> Tüm Okul</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="9A"> 9-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="9B"> 9-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="10A"> 10-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="10B"> 10-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="11A"> 11-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="11B"> 11-B</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="12A"> 12-A</label>
+                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="12B"> 12-B</label>
+                </div>
+
+                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Görsel veya PDF Dosyası:</label>
+                <input type="file" id="idare-file" accept="image/*,.pdf">
+
+                <button class="btn-submit" onclick="idareDuyuruYayinla()">Duyuruyu Yayınla</button>
             </div>
+
             <div class="card">
-                <div class="card-title">Günün Yemek Menüsü</div>
+                <div class="card-title">2. Günün Yemek Menüsü</div>
                 <input type="text" id="idare-yemek" placeholder="Yemek Listesi...">
                 <button class="btn-submit" onclick="yemekGuncelle()">Menüyü Güncelle</button>
             </div>
         </section>
+
+        <section id="panel-idare-liste" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-list-alt"></i> Yayınlanan İdare Duyuruları</h2>
+            <div id="idare-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
+        </section>
     </main>
 
-    <nav>
-        <button class="nav-btn active" onclick="tabDegistir('duyurular', this)"><i class="fas fa-bullhorn"></i>Duyurular</button>
-        <button class="nav-btn" onclick="tabDegistir('odevler', this)"><i class="fas fa-tasks"></i>Ödevler</button>
-        <button class="nav-btn" onclick="tabDegistir('program', this)"><i class="fas fa-calendar-alt"></i>Program</button>
-        <button class="nav-btn" onclick="tabDegistir('notlar', this)"><i class="fas fa-calculator"></i>Notlarım</button>
-        <button class="nav-btn" onclick="tabDegistir('pomodoro', this)"><i class="fas fa-stopwatch"></i>Pomodoro</button>
+    <!-- ROL DİNAMİK ALT MENÜ (NAVIGATOR) -->
+    <nav id="bottom-nav">
+        <!-- JS tarafında dinamik yüklenir -->
     </nav>
 
     <script>
@@ -322,7 +371,6 @@
         let yemekMenusu = "";
         let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
 
-        // OTURUM / PROFİL YÖNETİMİ
         let activeSession = JSON.parse(localStorage.getItem('kk_active_session')) || null;
 
         function closeModals() {
@@ -337,7 +385,6 @@
             if(role === 'idare') document.getElementById('admin-modal').style.display = 'flex';
         }
 
-        // ÖĞRENCİ GİRİŞİ (ÇIKIŞ YAPILAMAZ)
         function ogrenciGirisKaydet() {
             let name = document.getElementById('login-student-name').value.trim();
             let cls = document.getElementById('login-student-class').value;
@@ -350,7 +397,6 @@
             sessionUygula();
         }
 
-        // ÖĞRETMEN GİRİŞİ
         function ogretmenGirisKaydet() {
             let pass = document.getElementById('teacher-pass-input').value;
             let name = document.getElementById('teacher-name-input').value.trim();
@@ -363,10 +409,8 @@
             localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
             closeModals();
             sessionUygula();
-            tabDegistir('panel-ogretmen');
         }
 
-        // İDARE GİRİŞİ
         function idareGirisKaydet() {
             let pass = document.getElementById('admin-pass-input').value;
             let name = document.getElementById('admin-name-input').value.trim();
@@ -379,7 +423,6 @@
             localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
             closeModals();
             sessionUygula();
-            tabDegistir('panel-idare');
         }
 
         function oturumKapat() {
@@ -390,8 +433,34 @@
             }
         }
 
+        function renderBottomNav() {
+            const nav = document.getElementById('bottom-nav');
+            if(!activeSession || activeSession.role === 'student') {
+                nav.innerHTML = `
+                    <button class="nav-btn active" onclick="tabDegistir('duyurular', this)"><i class="fas fa-bullhorn"></i>Duyurular</button>
+                    <button class="nav-btn" onclick="tabDegistir('odevler', this)"><i class="fas fa-tasks"></i>Ödevler</button>
+                    <button class="nav-btn" onclick="tabDegistir('program', this)"><i class="fas fa-calendar-alt"></i>Program</button>
+                    <button class="nav-btn" onclick="tabDegistir('notlar', this)"><i class="fas fa-calculator"></i>Notlarım</button>
+                    <button class="nav-btn" onclick="tabDegistir('pomodoro', this)"><i class="fas fa-stopwatch"></i>Pomodoro</button>
+                `;
+            } else if(activeSession.role === 'teacher') {
+                nav.innerHTML = `
+                    <button class="nav-btn active" onclick="tabDegistir('panel-ogretmen-ekle', this)"><i class="fas fa-plus-circle"></i>Ödev/Duyuru Ekle</button>
+                    <button class="nav-btn" onclick="tabDegistir('panel-ogretmen-liste', this); ogretmenPostlariniGetir();"><i class="fas fa-history"></i>Yayınladıklarım</button>
+                    <button class="nav-btn" onclick="tabDegistir('duyurular', this)"><i class="fas fa-eye"></i>Öğrenci Akışı</button>
+                `;
+            } else if(activeSession.role === 'admin') {
+                nav.innerHTML = `
+                    <button class="nav-btn active" onclick="tabDegistir('panel-idare-ekle', this)"><i class="fas fa-bullhorn"></i>Duyuru/Menü Ekle</button>
+                    <button class="nav-btn" onclick="tabDegistir('panel-idare-liste', this); idarePostlariniGetir();"><i class="fas fa-list-alt"></i>Yayınlananlar</button>
+                    <button class="nav-btn" onclick="tabDegistir('duyurular', this)"><i class="fas fa-eye"></i>Öğrenci Akışı</button>
+                `;
+            }
+        }
+
         function sessionUygula() {
             closeModals();
+            renderBottomNav();
             if(activeSession) {
                 document.getElementById('user-bar').style.display = 'flex';
                 let infoElem = document.getElementById('display-user-info');
@@ -400,20 +469,22 @@
 
                 if(activeSession.role === 'student') {
                     infoElem.innerText = `${activeSession.name} (${activeSession.detail})`;
-                    logoutBtn.style.display = 'none'; // Öğrenci çıkış yapamaz!
-                    adminHeaderBtns.style.display = 'none'; // Üstteki yönetici butonlarını da gizle
+                    logoutBtn.style.display = 'none';
+                    adminHeaderBtns.style.display = 'none';
+                    tabDegistir('duyurular');
                 } else if(activeSession.role === 'teacher') {
-                    infoElem.innerText = `Öğretmen: ${activeSession.name} - ${activeSession.detail}`;
+                    infoElem.innerText = `Öğretmen: ${activeSession.name} (${activeSession.detail})`;
                     logoutBtn.style.display = 'block';
                     adminHeaderBtns.style.display = 'none';
+                    tabDegistir('panel-ogretmen-ekle');
                 } else if(activeSession.role === 'admin') {
                     infoElem.innerText = `${activeSession.detail}: ${activeSession.name}`;
                     logoutBtn.style.display = 'block';
                     adminHeaderBtns.style.display = 'none';
+                    tabDegistir('panel-idare-ekle');
                 }
                 odevleriGetir();
             } else {
-                // Hiç oturum yoksa Öğrenci Modalını Aç
                 document.getElementById('student-modal').style.display = 'flex';
                 document.getElementById('user-bar').style.display = 'none';
                 document.getElementById('admin-header-btns').style.display = 'flex';
@@ -428,6 +499,15 @@
             if(btn) btn.classList.add('active');
         }
 
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve({ data: reader.result, name: file.name, type: file.type });
+                reader.onerror = error => reject(error);
+            });
+        }
+
         async function bulutVerileriniYukle() {
             if (!supabaseClient) return;
             try {
@@ -439,6 +519,9 @@
                         if (item.id === 'yemek') yemekMenusu = item.content || "Menü eklenmedi.";
                     });
                 }
+                duyurular.sort((a,b) => b.id - a.id);
+                odevler.sort((a,b) => b.id - a.id);
+
                 duyurulariGetir();
                 odevleriGetir();
                 let yElem = document.getElementById('yemek-container');
@@ -464,70 +547,205 @@
         function duyurulariGetir() {
             const container = document.getElementById('duyuru-container');
             if(!container) return;
-            if(duyurular.length === 0) {
+            
+            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "ALL";
+            let filtrelenmis = duyurular.filter(d => {
+                if(!d.targetClasses || d.targetClasses.includes("ALL")) return true;
+                return d.targetClasses.includes(secilenSinif);
+            });
+
+            if(filtrelenmis.length === 0) {
                 container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz yayınlanmış duyuru yok.</p>";
                 return;
             }
             container.innerHTML = "";
-            duyurular.forEach(d => {
+            filtrelenmis.forEach(d => {
+                let fileHtml = "";
+                if(d.file) {
+                    if(d.file.type.includes("pdf")) {
+                        fileHtml = `<div class="card-attachment"><a href="${d.file.data}" download="${d.file.name}" class="pdf-link"><i class="fas fa-file-pdf"></i> ${d.file.name} (PDF İndir)</a></div>`;
+                    } else {
+                        fileHtml = `<div class="card-attachment"><img src="${d.file.data}" alt="Görsel"></div>`;
+                    }
+                }
+
                 container.innerHTML += `
                     <div class="card">
                         <div class="card-title">${d.baslik}</div>
-                        <div class="card-date"><i class="far fa-clock"></i> ${d.tarih}</div>
+                        <div class="card-date"><i class="far fa-clock"></i> ${d.tarih} - <span style="color:var(--primary);">${d.author || 'İdare'}</span></div>
                         <div class="card-body">${d.icerik}</div>
+                        ${fileHtml}
                     </div>
                 `;
             });
         }
 
-        async function duyuruYayinla() {
-            let b = document.getElementById('idare-baslik').value;
-            let i = document.getElementById('idare-icerik').value;
-            if(!b || !i) return alert("Tüm alanları doldurun.");
-            duyurular.unshift({ id: Date.now(), baslik: b, tarih: new Date().toLocaleDateString('tr-TR'), icerik: i });
-            await bulutaKaydet('duyurular', duyurular);
-            alert("Duyuru yayınlandı!");
-            document.getElementById('idare-baslik').value = "";
-            document.getElementById('idare-icerik').value = "";
-            duyurulariGetir(); tabDegistir('duyurular');
-        }
-
         function odevleriGetir() {
             const container = document.getElementById('odev-container');
             if(!container) return;
-            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "9A";
-            let filtrelenmis = odevler.filter(o => o.sinif === secilenSinif || o.sinif === "Tüm Okul");
+            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "ALL";
+            let filtrelenmis = odevler.filter(o => {
+                if(!o.targetClasses || o.targetClasses.includes("ALL")) return true;
+                return o.targetClasses.includes(secilenSinif);
+            });
+
             if(filtrelenmis.length === 0) {
                 container.innerHTML = "<p style='color:#888; text-align:center;'>Bu sınıf için ödev bulunmuyor.</p>";
                 return;
             }
             container.innerHTML = "";
             filtrelenmis.forEach(o => {
+                let fileHtml = "";
+                if(o.file) {
+                    if(o.file.type.includes("pdf")) {
+                        fileHtml = `<div class="card-attachment"><a href="${o.file.data}" download="${o.file.name}" class="pdf-link"><i class="fas fa-file-pdf"></i> ${o.file.name} (PDF İndir)</a></div>`;
+                    } else {
+                        fileHtml = `<div class="card-attachment"><img src="${o.file.data}" alt="Görsel"></div>`;
+                    }
+                }
+
                 container.innerHTML += `
                     <div class="todo-item ${o.done ? 'completed' : ''}">
                         <input type="checkbox" ${o.done ? 'checked' : ''} onchange="odevDurumDegis(${o.id})">
-                        <div class="todo-text">
+                        <div class="todo-text" style="width:100%;">
                             <strong>[${o.ders}]</strong> ${o.icerik}
-                            <div style="font-size:0.75rem; color:#888;">Son Teslim: ${o.tarih}</div>
+                            <div style="font-size:0.75rem; color:#888;">Öğretmen: ${o.author || 'Branş Öğretmeni'} | Son Teslim: ${o.tarih}</div>
+                            ${fileHtml}
                         </div>
                     </div>
                 `;
             });
         }
 
-        async function odevYayinla() {
-            let ders = document.getElementById('ogretmen-ders').value;
-            let sinif = document.getElementById('ogretmen-sinif').value;
-            let tarih = document.getElementById('ogretmen-tarih').value;
-            let icerik = document.getElementById('ogretmen-icerik').value;
-            if(!ders || !icerik) return alert("Ders adı ve içeriği yazın.");
+        async function ogretmenPaylasimYap() {
+            let postType = document.getElementById('ogretmen-post-type').value;
+            let ders = document.getElementById('ogretmen-ders').value.trim();
+            let tarih = document.getElementById('ogretmen-tarih').value.trim();
+            let icerik = document.getElementById('ogretmen-icerik').value.trim();
+            let fileInput = document.getElementById('ogretmen-file');
 
-            odevler.unshift({ id: Date.now(), ders, sinif, tarih, icerik, done: false });
-            await bulutaKaydet('odevler', odevler);
-            alert("Ödev gönderildi!");
+            let selectedClasses = [];
+            document.querySelectorAll('.cls-cb:checked').forEach(cb => selectedClasses.push(cb.value));
+            if(selectedClasses.length === 0) selectedClasses = ["ALL"];
+
+            if(!ders || !icerik) return alert("Lütfen ders/konu adını ve açıklamayı yazın.");
+
+            let fileObj = null;
+            if(fileInput.files.length > 0) {
+                fileObj = await getBase64(fileInput.files[0]);
+            }
+
+            let newItem = {
+                id: Date.now(),
+                ders: ders,
+                tarih: tarih || new Date().toLocaleDateString('tr-TR'),
+                icerik: icerik,
+                author: activeSession ? `${activeSession.name} (${activeSession.detail})` : "Öğretmen",
+                targetClasses: selectedClasses,
+                file: fileObj,
+                done: false
+            };
+
+            if(postType === 'odev') {
+                odevler.unshift(newItem);
+                await bulutaKaydet('odevler', odevler);
+                alert("Ödev yayınlandı!");
+            } else {
+                newItem.baslik = `[${ders}] Duyurusu`;
+                duyurular.unshift(newItem);
+                await bulutaKaydet('duyurular', duyurular);
+                alert("Duyuru yayınlandı!");
+            }
+
             document.getElementById('ogretmen-ders').value = "";
+            document.getElementById('ogretmen-tarih').value = "";
             document.getElementById('ogretmen-icerik').value = "";
-            odevleriGetir(); tabDegistir('odevler');
+            fileInput.value = "";
+
+            tabDegistir('panel-ogretmen-liste');
+            ogretmenPostlariniGetir();
+        }
+
+        function ogretmenPostlariniGetir() {
+            const container = document.getElementById('ogretmen-postlar-container');
+            if(!container) return;
+            let myName = activeSession ? activeSession.name : "";
+            let myPosts = odevler.filter(o => o.author && o.author.includes(myName))
+                .concat(duyurular.filter(d => d.author && d.author.includes(myName)));
+
+            myPosts.sort((a,b) => b.id - a.id);
+
+            if(myPosts.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz ödev veya duyuru paylaşmadınız.</p>";
+                return;
+            }
+            container.innerHTML = "";
+            myPosts.forEach(p => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">${p.ders || p.baslik}</div>
+                        <div class="card-date">Tarih: ${p.tarih} | Hedef: ${p.targetClasses ? p.targetClasses.join(', ') : 'Tüm Okul'}</div>
+                        <div class="card-body">${p.icerik}</div>
+                    </div>
+                `;
+            });
+        }
+
+        async function idareDuyuruYayinla() {
+            let b = document.getElementById('idare-baslik').value.trim();
+            let i = document.getElementById('idare-icerik').value.trim();
+            let fileInput = document.getElementById('idare-file');
+
+            let selectedClasses = [];
+            document.querySelectorAll('.idare-cls-cb:checked').forEach(cb => selectedClasses.push(cb.value));
+            if(selectedClasses.length === 0) selectedClasses = ["ALL"];
+
+            if(!b || !i) return alert("Başlık ve içeriği yazın.");
+
+            let fileObj = null;
+            if(fileInput.files.length > 0) {
+                fileObj = await getBase64(fileInput.files[0]);
+            }
+
+            let newItem = {
+                id: Date.now(),
+                baslik: b,
+                tarih: new Date().toLocaleDateString('tr-TR'),
+                icerik: i,
+                author: activeSession ? `${activeSession.detail} - ${activeSession.name}` : "İdare",
+                targetClasses: selectedClasses,
+                file: fileObj
+            };
+
+            duyurular.unshift(newItem);
+            await bulutaKaydet('duyurular', duyurular);
+            alert("İdare duyurusu yayınlandı!");
+            document.getElementById('idare-baslik').value = "";
+            document.getElementById('idare-icerik').value = "";
+            fileInput.value = "";
+
+            tabDegistir('panel-idare-liste');
+            idarePostlariniGetir();
+        }
+
+        function idarePostlariniGetir() {
+            const container = document.getElementById('idare-postlar-container');
+            if(!container) return;
+            container.innerHTML = "";
+            duyurular.sort((a,b) => b.id - a.id);
+            if(duyurular.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz idare duyurusu bulunmuyor.</p>";
+                return;
+            }
+            duyurular.forEach(d => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">${d.baslik}</div>
+                        <div class="card-date">${d.tarih} | Yazan: ${d.author || 'İdare'}</div>
+                        <div class="card-body">${d.icerik}</div>
+                    </div>
+                `;
+            });
         }
 
         function odevDurumDegis(id) {
@@ -537,7 +755,7 @@
         }
 
         async function yemekGuncelle() {
-            let y = document.getElementById('idare-yemek').value;
+            let y = document.getElementById('idare-yemek').value.trim();
             if(!y) return alert("Menü metnini girin.");
             yemekMenusu = y;
             await bulutaKaydet('yemek', yemekMenusu);
