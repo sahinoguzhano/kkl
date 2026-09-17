@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kandilli Kız Lisesi - Mobil Asistan</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Supabase JS Kütüphanesi -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #800020; /* Kandilli Bordo */
+            --primary-dark: #580016;
+            --accent: #d4af37; /* Altın Detay */
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --gray: #7f8c8d;
+            --light-gray: #ecf0f1;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 75px; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; padding: 15px 18px;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
+        header .brand i { color: var(--accent); font-size: 1.4rem; }
+        header button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+
+        .class-bar {
+            background: #ffffff; padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--accent);
+        }
+        .class-bar select {
+            padding: 5px 10px; border-radius: 6px;
+            border: 1px solid var(--primary); font-weight: 600;
+            color: var(--primary-dark); outline: none;
+        }
+
+        main { padding: 15px; max-width: 650px; margin: 0 auto; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--card); border-radius: 12px; padding: 16px;
+            margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+            border-left: 4px solid var(--primary);
+        }
+        .card.accent-border { border-left-color: var(--accent); }
+        .card-title { font-weight: 700; color: var(--primary-dark); font-size: 1.05rem; }
+        .card-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 8px; }
+        .card-body { font-size: 0.92rem; line-height: 1.5; color: #444; }
+
+        input, select, textarea, button.btn-submit {
+            width: 100%; padding: 11px; margin-top: 8px;
+            border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none;
+        }
+        button.btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 14px;
+        }
+
+        .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .todo-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+        .todo-item.completed .todo-text { text-decoration: line-through; color: var(--gray); }
+
+        .pomodoro-box { text-align: center; padding: 20px 10px; }
+        .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary-dark); margin: 15px 0; font-family: monospace; }
+        .timer-controls { display: flex; justify-content: center; gap: 10px; }
+        .timer-btn { padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; border: none; color: white; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { padding: 9px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+
+        nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; display: flex; justify-content: space-around;
+            padding: 8px 0; box-shadow: 0 -3px 12px rgba(0,0,0,0.08); z-index: 100;
+        }
+        nav button {
+            background: none; border: none; color: #888; font-size: 0.7rem;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 20%;
+        }
+        nav button.active { color: var(--primary); font-weight: 700; }
+        nav button i { font-size: 1.25rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Kandilli Kız Lisesi</span>
+        </div>
+        <div>
+            <button onclick="paneliAc('ogretmen')" title="Öğretmen Girişi"><i class="fas fa-chalkboard-teacher"></i></button>
+            <button onclick="paneliAc('idare')" title="İdare Girişi" style="margin-left: 10px;"><i class="fas fa-user-shield"></i></button>
+        </div>
+    </header>
+
+    <div class="class-bar">
+        <label for="student-class"><i class="fas fa-users"></i> Sınıfınız:</label>
+        <select id="student-class" onchange="odevleriGetir()">
+            <option value="9A">9-A</option><option value="9B">9-B</option>
+            <option value="10A">10-A</option><option value="10B">10-B</option>
+            <option value="11A">11-A (Sayısal)</option><option value="11B">11-B (EA)</option>
+            <option value="12A">12-A (Sayısal)</option><option value="12B">12-B (EA)</option>
+        </select>
+    </div>
+
+    <main>
+        <section id="duyurular" class="tab-content active">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> Okul Duyuruları</h2>
+            <div id="duyuru-container"><p style="text-align:center; color:#888;">Duyurular yükleniyor...</p></div>
+        </section>
+
+        <section id="odevler" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-tasks"></i> Akşam Ödev Takibi</h2>
+            <div class="card accent-border">
+                <div class="card-title"><i class="fas fa-check-circle"></i> Sınıfınıza Özel Ödevler</div>
+                <div id="odev-container" style="margin-top: 10px;">
+                    <p style="text-align:center; color:#888;">Ödevler yükleniyor...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="program" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calendar-alt"></i> Ders Programı & Menü</h2>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-utensils"></i> Günün Yemek Menüsü</div>
+                <div class="card-body" id="yemek-container" style="margin-top: 6px; font-weight:600;">Yükleniyor...</div>
+            </div>
+        </section>
+
+        <section id="notlar" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calculator"></i> Kişisel Not Takibi</h2>
+            <div class="card">
+                <div class="card-title">Ders Notu Ekle</div>
+                <input type="text" id="ders-adi" placeholder="Ders Adı (Örn: Fizik)">
+                <div style="display:flex; gap: 6px;">
+                    <input type="number" id="yazili-1" placeholder="1. Yazılı">
+                    <input type="number" id="yazili-2" placeholder="2. Yazılı">
+                    <input type="number" id="performans" placeholder="Perf/Sözlü">
+                </div>
+                <button class="btn-submit" onclick="notEkle()">Hesapla & Kaydet</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>Ders</th><th>Y1</th><th>Y2</th><th>Perf</th><th>Ort.</th><th></th></tr></thead>
+                    <tbody id="not-tablosu"></tbody>
+                </table>
+                <div id="belge-durumu" style="margin-top: 12px; font-weight: bold; text-align: center;">Ortalama: 0.00</div>
+            </div>
+        </section>
+
+        <section id="pomodoro" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-stopwatch"></i> Pomodoro Çalışma Sayacı</h2>
+            <div class="card pomodoro-box">
+                <div class="timer-display" id="timer-display">25:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn" style="background:var(--success)" onclick="startTimer()">Başlat</button>
+                    <button class="timer-btn" style="background:var(--warning)" onclick="pauseTimer()">Durdur</button>
+                    <button class="timer-btn" style="background:var(--danger)" onclick="resetTimer()">Sıfırla</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="panel-ogretmen" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-pen"></i> Öğretmen Ödev Paneli</h2>
+            <div class="card accent-border">
+                <input type="text" id="ogretmen-ders" placeholder="Ders Adı (Örn: Fizik)">
+                <select id="ogretmen-sinif">
+                    <option value="Tüm Okul">Tüm Sınıflar</option>
+                    <option value="9A">9-A</option><option value="9B">9-B</option>
+                    <option value="10A">10-A</option><option value="10B">10-B</option>
+                    <option value="11A">11-A</option><option value="11B">11-B</option>
+                    <option value="12A">12-A</option><option value="12B">12-B</option>
+                </select>
+                <input type="text" id="ogretmen-tarih" placeholder="Son Teslim Tarihi">
+                <textarea id="ogretmen-icerik" rows="3" placeholder="Ödev Detayı..."></textarea>
+                <button class="btn-submit" onclick="odevYayinla()">Ödevi Canlıya Gönder</button>
+            </div>
+        </section>
+
+        <section id="panel-idare" class="tab-content">
+            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-sliders-h"></i> İdare Yönetim Paneli</h2>
+            <div class="card">
+                <div class="card-title">Duyuru Yayınla</div>
+                <input type="text" id="idare-baslik" placeholder="Duyuru Başlığı">
+                <textarea id="idare-icerik" rows="3" placeholder="Duyuru Metni..."></textarea>
+                <button class="btn-submit" onclick="duyuruYayinla()">Duyuruyu Yayınla</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Günün Yemek Menüsü</div>
+                <input type="text" id="idare-yemek" placeholder="Yemek Listesi...">
+                <button class="btn-submit" onclick="yemekGuncelle()">Menüyü Güncelle</button>
+            </div>
+        </section>
+    </main>
+
+    <nav>
+        <button class="nav-btn active" onclick="tabDegistir('duyurular', this)"><i class="fas fa-bullhorn"></i>Duyurular</button>
+        <button class="nav-btn" onclick="tabDegistir('odevler', this)"><i class="fas fa-tasks"></i>Ödevler</button>
+        <button class="nav-btn" onclick="tabDegistir('program', this)"><i class="fas fa-calendar-alt"></i>Program</button>
+        <button class="nav-btn" onclick="tabDegistir('notlar', this)"><i class="fas fa-calculator"></i>Notlarım</button>
+        <button class="nav-btn" onclick="tabDegistir('pomodoro', this)"><i class="fas fa-stopwatch"></i>Pomodoro</button>
+    </nav>
+
+    <script>
+        // SUPABASE VERİTABANI BAĞLANTISI
+        const SUPABASE_URL = 'https://npsuvaygtvdoiucfntsc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wc3V2YXlndHZkb2l1Y2ZudHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2Nzg2MzgsImV4cCI6MjEwNTI1NDYzOH0.oxU8I21HcF4Y97UkPnNnm7TxNxS2fHlJjfoYsGrdM5s';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const OGRETMEN_SIFRE = "kandilli_ogretmen";
+        const IDARE_SIFRE = "kandilli_idare";
+
+        let duyurular = [];
+        let odevler = [];
+        let yemekMenusu = "";
+        let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
+
+        // BULUTTAN VERİLERİ ANLIK ÇEKME
+        async function bulutVerileriniYukle() {
+            try {
+                let { data, error } = await supabase.from('school_data').select('*');
+                if (data) {
+                    data.forEach(item => {
+                        if (item.id === 'duyurular') duyurular = item.content || [];
+                        if (item.id === 'odevler') odevler = item.content || [];
+                        if (item.id === 'yemek') yemekMenusu = item.content || "Menü girilmedi.";
+                    });
+                    duyurulariGetir();
+                    odevleriGetir();
+                    document.getElementById('yemek-container').innerText = yemekMenusu;
+                }
+            } catch (e) { console.log('Bulut hatası:', e); }
+        }
+
+        async function bulutaKaydet(id, content) {
+            await supabase.from('school_data').upsert({ id: id, content: content });
+        }
+
+        function tabDegistir(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(btn) btn.classList.add('active');
+        }
+
+        function paneliAc(tur) {
+            let s = prompt(tur === 'ogretmen' ? "Öğretmen Şifresi:" : "İdare Şifresi:");
+            if(tur === 'ogretmen' && s === OGRETMEN_SIFRE) tabDegistir('panel-ogretmen');
+            else if(tur === 'idare' && s === IDARE_SIFRE) tabDegistir('panel-idare');
+            else if(s !== null) alert("Hatalı Şifre!");
+        }
+
+        function duyurulariGetir() {
+            const container = document.getElementById('duyuru-container');
+            container.innerHTML = duyurular.length === 0 ? "<p style='text-align:center; color:#888;'>Duyuru bulunmuyor.</p>" : "";
+            duyurular.forEach(d => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">${d.baslik}</div>
+                        <div class="card-date"><i class="far fa-clock"></i> ${d.tarih}</div>
+                        <div class="card-body">${d.icerik}</div>
+                    </div>
+                `;
+            });
+        }
+
+        async function duyuruYayinla() {
+            let b = document.getElementById('idare-baslik').value;
+            let i = document.getElementById('idare-icerik').value;
+            if(!b || !i) return alert("Tüm alanları doldurun.");
+            duyurular.unshift({ id: Date.now(), baslik: b, tarih: new Date().toLocaleDateString('tr-TR'), icerik: i });
+            await bulutaKaydet('duyurular', duyurular);
+            alert("Duyuru canlıya alındı!");
+            duyurulariGetir(); tabDegistir('duyurular');
+        }
+
+        function odevleriGetir() {
+            const container = document.getElementById('odev-container');
+            let secilenSinif = document.getElementById('student-class').value;
+            let filtrelenmis = odevler.filter(o => o.sinif === secilenSinif || o.sinif === "Tüm Okul");
+            container.innerHTML = filtrelenmis.length === 0 ? "<p style='color:#888; text-align:center;'>Bu sınıf için ödev yok.</p>" : "";
+            filtrelenmis.forEach(o => {
+                container.innerHTML += `
+                    <div class="todo-item ${o.done ? 'completed' : ''}">
+                        <input type="checkbox" ${o.done ? 'checked' : ''} onchange="odevDurumDegis(${o.id})">
+                        <div class="todo-text">
+                            <strong>[${o.ders}]</strong> ${o.icerik}
+                            <div style="font-size:0.75rem; color:#888;">Son Teslim: ${o.tarih}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function odevYayinla() {
+            let ders = document.getElementById('ogretmen-ders').value;
+            let sinif = document.getElementById('ogretmen-sinif').value;
+            let tarih = document.getElementById('ogretmen-tarih').value;
+            let icerik = document.getElementById('ogretmen-icerik').value;
+            if(!ders || !icerik) return alert("Ders adı ve içeriği yazın.");
+
+            odevler.unshift({ id: Date.now(), ders, sinif, tarih, icerik, done: false });
+            await bulutaKaydet('odevler', odevler);
+            alert("Ödev tüm öğrencilerin ekranına gönderildi!");
+            odevleriGetir(); tabDegistir('odevler');
+        }
+
+        function odevDurumDegis(id) {
+            let item = odevler.find(o => o.id === id);
+            if(item) item.done = !item.done;
+            odevleriGetir();
+        }
+
+        async function yemekGuncelle() {
+            let y = document.getElementById('idare-yemek').value;
+            if(!y) return alert("Menü metnini girin.");
+            yemekMenusu = y;
+            await bulutaKaydet('yemek', yemekMenusu);
+            document.getElementById('yemek-container').innerText = yemekMenusu;
+            alert("Günün yemek menüsü güncellendi!");
+        }
+
+        function notEkle() {
+            let ad = document.getElementById('ders-adi').value;
+            let y1 = parseFloat(document.getElementById('yazili-1').value) || 0;
+            let y2 = parseFloat(document.getElementById('yazili-2').value) || 0;
+            let perf = parseFloat(document.getElementById('performans').value) || 0;
+            if(!ad) return alert("Ders adını girin.");
+
+            let ort = ((y1 + y2 + perf) / 3).toFixed(2);
+            dersNotlari.push({ id: Date.now(), ad, y1, y2, perf, ort });
+            localStorage.setItem('kk_notlar', JSON.stringify(dersNotlari));
+            notlariListele();
+        }
+
+        function notSil(id) {
+            dersNotlari = dersNotlari.filter(n => n.id !== id);
+            localStorage.setItem('kk_notlar', JSON.stringify(dersNotlari));
+            notlariListele();
+        }
+
+        function notlariListele() {
+            const tbody = document.getElementById('not-tablosu');
+            tbody.innerHTML = "";
+            let toplam = 0;
+            dersNotlari.forEach(n => {
+                toplam += parseFloat(n.ort);
+                tbody.innerHTML += `<tr><td><b>${n.ad}</b></td><td>${n.y1}</td><td>${n.y2}</td><td>${n.perf}</td><td><b>${n.ort}</b></td><td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="notSil(${n.id})"></i></td></tr>`;
+            });
+            let genelOrt = dersNotlari.length > 0 ? (toplam / dersNotlari.length).toFixed(2) : "0.00";
+            document.getElementById('belge-durumu').innerText = `Genel Ortalama: ${genelOrt}`;
+        }
+
+        let timer, timeLeft = 1500, isRunning = false;
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+        }
+        function startTimer() {
+            if(isRunning) return; isRunning = true;
+            timer = setInterval(() => {
+                if(timeLeft > 0) { timeLeft--; updateTimerDisplay(); }
+                else { clearInterval(timer); alert("Süre Doldu!"); isRunning = false; }
+            }, 1000);
+        }
+        function pauseTimer() { clearInterval(timer); isRunning = false; }
+        function resetTimer() { clearInterval(timer); isRunning = false; timeLeft = 1500; updateTimerDisplay(); }
+
+        bulutVerileriniYukle();
+        notlariListele();
+    </script>
+</body>
+</html>
