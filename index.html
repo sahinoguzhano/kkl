@@ -3,46 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi v1.01 - Mobil Asistan</title>
+    <title>Kandilli Kız Lisesi v1.02 - Mobil Asistan</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script>
-        const APP_VERSION = "v1.01";
-        const OGRETMEN_SIFRE = "kandilli_ogretmen";
-        const IDARE_SIFRE = "kandilli_idare";
-
-        function paneliAc(tur) {
-            let mesag = tur === 'ogretmen' ? "Öğretmen Giriş Şifresi:" : "İdare Giriş Şifresi:";
-            let s = prompt(mesag);
-            
-            if (s === null) return;
-
-            if (tur === 'ogretmen' && s === OGRETMEN_SIFRE) {
-                alert("Öğretmen Paneline Giriş Yapıldı!");
-                tabDegistir('panel-ogretmen');
-            } else if (tur === 'idare' && s === IDARE_SIFRE) {
-                alert("İdare Paneline Giriş Yapıldı!");
-                tabDegistir('panel-idare');
-            } else {
-                alert("Hatalı Şifre!");
-            }
-        }
-
-        function tabDegistir(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            let hedefTab = document.getElementById(tabId);
-            if(hedefTab) {
-                hedefTab.classList.add('active');
-            }
-            if(btn) {
-                btn.classList.add('active');
-            }
-        }
-    </script>
-
     <style>
         :root {
             --primary: #800020;
@@ -77,7 +41,6 @@
             color: white; padding: 6px 12px; border-radius: 8px;
             font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
-        .header-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
         .user-bar {
             background: #ffffff; padding: 10px 15px;
@@ -86,20 +49,20 @@
             border-bottom: 2px solid var(--accent);
         }
         .user-info { font-size: 0.9rem; font-weight: 600; color: var(--primary-dark); }
-        .reset-btn { background: none; border: none; color: var(--gray); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
 
-        /* GİRİŞ KARŞILAMA EKRANI (MODAL) */
-        #welcome-screen {
+        /* GİRİŞ KARŞILAMA EKRANLARI (MODAL) */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(88, 0, 22, 0.95);
             z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-        .welcome-card {
+        .modal-card {
             background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 400px;
             text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        .welcome-card h2 { color: var(--primary-dark); margin-bottom: 10px; font-size: 1.3rem; }
-        .welcome-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 20px; }
+        .modal-card h2 { color: var(--primary-dark); margin-bottom: 8px; font-size: 1.3rem; }
+        .modal-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 18px; }
 
         main { padding: 15px; max-width: 650px; margin: 0 auto; }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -148,19 +111,20 @@
         }
         nav button.active { color: var(--primary); font-weight: 700; }
         nav button i { font-size: 1.25rem; }
+        .link-btn { background: none; border: none; color: var(--gray); text-decoration: underline; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <!-- İLK AÇILIŞ ÖĞRENCİ GİRİŞ EKRANI -->
-    <div id="welcome-screen">
-        <div class="welcome-card">
+    <!-- 1. ÖĞRENCİ KARŞILAMA EKRANI -->
+    <div id="student-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
             <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
             <h2>Kandilli Kız Lisesi</h2>
-            <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
+            <p>Öğrenci Girişi (Kurulum Bir Defalıktır)</p>
             
-            <input type="text" id="login-name" placeholder="Adınız veya Lakabınız">
-            <select id="login-class">
+            <input type="text" id="login-student-name" placeholder="Adınız veya Lakabınız">
+            <select id="login-student-class">
                 <option value="">Sınıf / Şube Seçiniz</option>
                 <option value="9A">9-A</option><option value="9B">9-B</option>
                 <option value="10A">10-A</option><option value="10B">10-B</option>
@@ -168,33 +132,79 @@
                 <option value="12A">12-A (Sayısal)</option><option value="12B">12-B (EA)</option>
             </select>
             
-            <button class="btn-submit" onclick="ogrenciGirisYap()">Öğrenci Olarak Başla</button>
+            <button class="btn-submit" onclick="ogrenciGirisKaydet()">Öğrenci Olarak Başla</button>
             
             <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: center; gap: 10px;">
-                <button class="reset-btn" onclick="paneliAc('ogretmen')">Öğretmen Girişi</button> | 
-                <button class="reset-btn" onclick="paneliAc('idare')">İdare Girişi</button>
+                <button class="link-btn" onclick="openAuthModal('ogretmen')">Öğretmen Girişi</button> | 
+                <button class="link-btn" onclick="openAuthModal('idare')">İdare Girişi</button>
             </div>
         </div>
     </div>
 
+    <!-- 2. ÖĞRETMEN GİRİŞ MODAL -->
+    <div id="teacher-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <i class="fas fa-chalkboard-teacher" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2>Öğretmen Girişi</h2>
+            <p>Öğretmen Profili Oluşturma</p>
+            
+            <input type="password" id="teacher-pass-input" placeholder="Öğretmen Şifresi">
+            <input type="text" id="teacher-name-input" placeholder="Adınız Soyadınız">
+            <select id="teacher-branch-input">
+                <option value="">Branşınızı Seçin</option>
+                <option value="Fizik">Fizik</option><option value="Matematik">Matematik</option>
+                <option value="Kimya">Kimya</option><option value="Biyoloji">Biyoloji</option>
+                <option value="Türk Dili ve Edebiyatı">Edebiyat</option><option value="Tarih">Tarih</option>
+                <option value="Coğrafya">Coğrafya</option><option value="İngilizce">İngilizce</option>
+                <option value="Rehberlik">Rehberlik</option><option value="Diğer">Diğer</option>
+            </select>
+            
+            <button class="btn-submit" onclick="ogretmenGirisKaydet()">Giriş Yap ve Kaydet</button>
+            <button class="link-btn" style="margin-top:10px;" onclick="closeModals()">İptal / Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- 3. İDARE GİRİŞ MODAL -->
+    <div id="admin-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2>İdare Girişi</h2>
+            <p>Yönetici Profili Oluşturma</p>
+            
+            <input type="password" id="admin-pass-input" placeholder="İdare Şifresi">
+            <input type="text" id="admin-name-input" placeholder="Adınız Soyadınız">
+            <select id="admin-title-input">
+                <option value="">Unvanınızı Seçin</option>
+                <option value="Okul Müdürü">Okul Müdürü</option>
+                <option value="Müdür Başyardımcısı">Müdür Başyardımcısı</option>
+                <option value="Müdür Yardımcısı">Müdür Yardımcısı</option>
+            </select>
+            
+            <button class="btn-submit" onclick="idareGirisKaydet()">Giriş Yap ve Kaydet</button>
+            <button class="link-btn" style="margin-top:10px;" onclick="closeModals()">İptal / Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
     <header>
         <div class="brand">
             <i class="fas fa-graduation-cap"></i>
             <span>Kandilli Kız Lisesi</span>
-            <span class="version-tag">v1.01</span>
+            <span class="version-tag">v1.02</span>
         </div>
-        <!-- YÖNETİM BUTONLARI (ÖĞRENCİ GİRİŞ YAPINCA GİZLENİR) -->
         <div id="admin-header-btns" style="display: flex; gap: 8px;">
-            <button class="header-btn" onclick="paneliAc('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
-            <button class="header-btn" onclick="paneliAc('idare')"><i class="fas fa-user-shield"></i> İdare</button>
+            <button class="header-btn" onclick="openAuthModal('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
+            <button class="header-btn" onclick="openAuthModal('idare')"><i class="fas fa-user-shield"></i> İdare</button>
         </div>
     </header>
 
+    <!-- KULLANICI / ROL BİLGİ BARI -->
     <div class="user-bar" id="user-bar" style="display: none;">
         <div class="user-info">
-            <i class="fas fa-user-circle"></i> <span id="display-user-name">Öğrenci</span> (<span id="display-user-class">9-A</span>)
+            <i class="fas fa-user-circle"></i> <span id="display-user-info">Profil Bilgisi</span>
         </div>
-        <button class="reset-btn" onclick="profilSifirla()">Profil Değiştir</button>
+        <!-- Sadece Öğretmen ve İdalede Görünür Çıkış Butonu -->
+        <button class="logout-btn" id="logout-btn" style="display:none;" onclick="oturumKapat()">Çıkış Yap</button>
     </div>
 
     <main>
@@ -304,49 +314,118 @@
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
+        const OGRETMEN_SIFRE = "kandilli_ogretmen";
+        const IDARE_SIFRE = "kandilli_idare";
+
         let duyurular = [];
         let odevler = [];
         let yemekMenusu = "";
         let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
 
-        // ÖĞRENCİ KULLANICI YÖNETİMİ
-        let currentUser = JSON.parse(localStorage.getItem('kk_student_profile')) || null;
+        // OTURUM / PROFİL YÖNETİMİ
+        let activeSession = JSON.parse(localStorage.getItem('kk_active_session')) || null;
 
-        function ogrenciGirisYap() {
-            let name = document.getElementById('login-name').value.trim();
-            let cls = document.getElementById('login-class').value;
-
-            if(!name || !cls) {
-                alert("Lütfen adınızı ve sınıfınızı seçin.");
-                return;
-            }
-
-            currentUser = { name: name, class: cls };
-            localStorage.setItem('kk_student_profile', JSON.stringify(currentUser));
-            profilUygula();
+        function closeModals() {
+            document.getElementById('student-modal').style.display = 'none';
+            document.getElementById('teacher-modal').style.display = 'none';
+            document.getElementById('admin-modal').style.display = 'none';
         }
 
-        function profilUygula() {
-            if(currentUser) {
-                document.getElementById('welcome-screen').style.display = 'none';
+        function openAuthModal(role) {
+            closeModals();
+            if(role === 'ogretmen') document.getElementById('teacher-modal').style.display = 'flex';
+            if(role === 'idare') document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        // ÖĞRENCİ GİRİŞİ (ÇIKIŞ YAPILAMAZ)
+        function ogrenciGirisKaydet() {
+            let name = document.getElementById('login-student-name').value.trim();
+            let cls = document.getElementById('login-student-class').value;
+
+            if(!name || !cls) return alert("Lütfen adınızı ve sınıfınızı seçin.");
+
+            activeSession = { role: 'student', name: name, detail: cls };
+            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
+            closeModals();
+            sessionUygula();
+        }
+
+        // ÖĞRETMEN GİRİŞİ
+        function ogretmenGirisKaydet() {
+            let pass = document.getElementById('teacher-pass-input').value;
+            let name = document.getElementById('teacher-name-input').value.trim();
+            let branch = document.getElementById('teacher-branch-input').value;
+
+            if(pass !== OGRETMEN_SIFRE) return alert("Hatalı Öğretmen Şifresi!");
+            if(!name || !branch) return alert("Lütfen adınızı ve branşınızı seçin.");
+
+            activeSession = { role: 'teacher', name: name, detail: branch };
+            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
+            closeModals();
+            sessionUygula();
+            tabDegistir('panel-ogretmen');
+        }
+
+        // İDARE GİRİŞİ
+        function idareGirisKaydet() {
+            let pass = document.getElementById('admin-pass-input').value;
+            let name = document.getElementById('admin-name-input').value.trim();
+            let title = document.getElementById('admin-title-input').value;
+
+            if(pass !== IDARE_SIFRE) return alert("Hatalı İdare Şifresi!");
+            if(!name || !title) return alert("Lütfen adınızı ve unvanınızı seçin.");
+
+            activeSession = { role: 'admin', name: name, detail: title };
+            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
+            closeModals();
+            sessionUygula();
+            tabDegistir('panel-idare');
+        }
+
+        function oturumKapat() {
+            if(confirm("Oturum kapatılsın mı?")) {
+                localStorage.removeItem('kk_active_session');
+                activeSession = null;
+                location.reload();
+            }
+        }
+
+        function sessionUygula() {
+            closeModals();
+            if(activeSession) {
                 document.getElementById('user-bar').style.display = 'flex';
-                document.getElementById('admin-header-btns').style.display = 'none'; // Öğretmen/İdare butonlarını gizle
-                document.getElementById('display-user-name').innerText = currentUser.name;
-                document.getElementById('display-user-class').innerText = currentUser.class;
+                let infoElem = document.getElementById('display-user-info');
+                let logoutBtn = document.getElementById('logout-btn');
+                let adminHeaderBtns = document.getElementById('admin-header-btns');
+
+                if(activeSession.role === 'student') {
+                    infoElem.innerText = `${activeSession.name} (${activeSession.detail})`;
+                    logoutBtn.style.display = 'none'; // Öğrenci çıkış yapamaz!
+                    adminHeaderBtns.style.display = 'none'; // Üstteki yönetici butonlarını da gizle
+                } else if(activeSession.role === 'teacher') {
+                    infoElem.innerText = `Öğretmen: ${activeSession.name} - ${activeSession.detail}`;
+                    logoutBtn.style.display = 'block';
+                    adminHeaderBtns.style.display = 'none';
+                } else if(activeSession.role === 'admin') {
+                    infoElem.innerText = `${activeSession.detail}: ${activeSession.name}`;
+                    logoutBtn.style.display = 'block';
+                    adminHeaderBtns.style.display = 'none';
+                }
                 odevleriGetir();
             } else {
-                document.getElementById('welcome-screen').style.display = 'flex';
+                // Hiç oturum yoksa Öğrenci Modalını Aç
+                document.getElementById('student-modal').style.display = 'flex';
                 document.getElementById('user-bar').style.display = 'none';
                 document.getElementById('admin-header-btns').style.display = 'flex';
             }
         }
 
-        function profilSifirla() {
-            if(confirm("Profil bilgileriniz sıfırlanacak ve giriş ekranına dönülecek. Onaylıyor musunuz?")) {
-                localStorage.removeItem('kk_student_profile');
-                currentUser = null;
-                profilUygula();
-            }
+        function tabDegistir(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            let hedefTab = document.getElementById(tabId);
+            if(hedefTab) hedefTab.classList.add('active');
+            if(btn) btn.classList.add('active');
         }
 
         async function bulutVerileriniYukle() {
@@ -416,7 +495,7 @@
         function odevleriGetir() {
             const container = document.getElementById('odev-container');
             if(!container) return;
-            let secilenSinif = currentUser ? currentUser.class : "9A";
+            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "9A";
             let filtrelenmis = odevler.filter(o => o.sinif === secilenSinif || o.sinif === "Tüm Okul");
             if(filtrelenmis.length === 0) {
                 container.innerHTML = "<p style='color:#888; text-align:center;'>Bu sınıf için ödev bulunmuyor.</p>";
@@ -514,7 +593,7 @@
         function resetTimer() { clearInterval(timer); isRunning = false; timeLeft = 1500; updateTimerDisplay(); }
 
         window.onload = function() {
-            profilUygula();
+            sessionUygula();
             bulutVerileriniYukle();
             notlariListele();
         };
