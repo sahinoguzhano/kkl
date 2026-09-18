@@ -6,31 +6,12 @@
 <title>Kandilli Kız Lisesi v1.08 — Mobil Asistan</title>
 
 <!--
-═══════════════════════════ KURULUM REHBERİ ═══════════════════════════
-1) Supabase → SQL Editor'da şu sorguyu çalıştırın:
-
-   create table if not exists posts (
-     id uuid primary key default gen_random_uuid(),
-     type text not null check (type in ('odev','duyuru','yemek')),
-     title text default '',
-     body text default '',
-     target_classes text[] default '{}',
-     all_school boolean default false,
-     media_kind text check (media_kind in ('image','pdf')),
-     media_url text,
-     media_data text,
-     deadline date,
-     author_name text default '',
-     author_role text default '',
-     created_at timestamptz default now()
-   );
-   alter table posts enable row level security;
-   create policy "anon_full_access" on posts for all using (true) with check (true);
-   alter publication supabase_realtime add table posts;
-
-2) Supabase → Storage'da "media" adında PUBLIC bir bucket oluşturun.
-3) Aşağıdaki SUPABASE_URL ve SUPABASE_ANON_KEY sabitleri zaten dolduruldu.
-════════════════════════════════════════════════════════════════════════
+═══════════════════════════ KURULUM NOTU ═══════════════════════════
+• Supabase URL / anon key bu dosyaya gömülüdür (public anon key).
+• SQL kurulumu (bir kez): Supabase → SQL Editor → önceki mesajdaki
+  "posts + RLS + realtime + media bucket" sorgusunu Run edin.
+• GitHub Pages: https://sahinoguzhano.github.io/kkl/
+════════════════════════════════════════════════════════════════════
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,27 +57,14 @@ header{
 .head-titles{flex:1;min-width:0}
 .head-titles .name{font-family:'Playfair Display',serif;font-weight:700;font-size:1.02rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .head-titles .sub{font-size:.68rem;color:var(--altin);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
-.v-badge{
-  background:var(--altin);color:var(--bordo-koyu);font-weight:800;font-size:.72rem;
-  padding:3px 9px;border-radius:999px;letter-spacing:.05em;
-}
+.v-badge{background:var(--altin);color:var(--bordo-koyu);font-weight:800;font-size:.72rem;padding:3px 9px;border-radius:999px;letter-spacing:.05em}
 .quick-logins{display:flex;gap:6px}
-.quick-logins button{
-  background:transparent;border:1px solid rgba(212,175,55,.7);color:var(--altin);
-  font-size:.7rem;font-weight:700;padding:6px 9px;border-radius:8px;transition:.2s;
-}
+.quick-logins button{background:transparent;border:1px solid rgba(212,175,55,.7);color:var(--altin);font-size:.7rem;font-weight:700;padding:6px 9px;border-radius:8px;transition:.2s}
 .quick-logins button:hover{background:var(--altin);color:var(--bordo-koyu);transform:translateY(-1px)}
-.logout-btn{
-  background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;
-  width:36px;height:36px;transition:.2s;
-}
+.logout-btn{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;width:36px;height:36px;transition:.2s}
 .logout-btn:hover{background:#fff;color:var(--bordo)}
 
-.profile-strip{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  background:#fff;border-bottom:1px solid rgba(128,0,32,.12);
-  padding:8px 14px;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.04);
-}
+.profile-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border-bottom:1px solid rgba(128,0,32,.12);padding:8px 14px;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .profile-strip .who{font-weight:700;color:var(--bordo)}
 .status-dot{font-size:.68rem;padding:2px 8px;border-radius:999px;font-weight:700;letter-spacing:.04em}
 .status-cloud{background:#e3f2e9;color:var(--yesil)}
@@ -105,34 +73,18 @@ header{
 .mini-link:hover{color:var(--kirmizi)}
 
 main{padding:16px 14px 8px}
-.section-title{
-  display:flex;align-items:center;gap:10px;margin:6px 2px 14px;
-}
+.section-title{display:flex;align-items:center;gap:10px;margin:6px 2px 14px}
 .section-title .bar{width:5px;height:26px;background:var(--altin);border-radius:3px}
 .section-title h2{font-size:1.28rem;color:var(--bordo-koyu);font-weight:800}
 .section-title .hint{font-size:.72rem;color:var(--soluk);margin-left:auto;text-align:right}
 
-.kart{
-  background:var(--kart);border-radius:var(--r);box-shadow:var(--golge);
-  border:1px solid rgba(128,0,32,.08);border-top:3px solid var(--bordo);
-  padding:16px;margin-bottom:14px;
-}
+.kart{background:var(--kart);border-radius:var(--r);box-shadow:var(--golge);border:1px solid rgba(128,0,32,.08);border-top:3px solid var(--bordo);padding:16px;margin-bottom:14px}
 .kart.altin-top{border-top-color:var(--altin)}
 
 .post-list{display:flex;flex-direction:column;gap:16px}
-.post-card{
-  position:relative;background:var(--kart);border-radius:var(--r);
-  border:1px solid rgba(128,0,32,.08);border-left:4px solid var(--altin);
-  box-shadow:var(--golge);padding:16px 14px 14px;
-  transition:transform .18s ease, box-shadow .18s ease;
-}
+.post-card{position:relative;background:var(--kart);border-radius:var(--r);border:1px solid rgba(128,0,32,.08);border-left:4px solid var(--altin);box-shadow:var(--golge);padding:16px 14px 14px;transition:transform .18s ease, box-shadow .18s ease}
 .post-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(88,0,22,.16)}
-.order-badge{
-  position:absolute;top:-11px;right:-7px;min-width:34px;height:34px;padding:0 6px;
-  border-radius:999px;background:var(--bordo);color:var(--altin);
-  border:2px solid var(--altin);display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:.78rem;box-shadow:0 3px 8px rgba(88,0,22,.35);
-}
+.order-badge{position:absolute;top:-11px;right:-7px;min-width:34px;height:34px;padding:0 6px;border-radius:999px;background:var(--bordo);color:var(--altin);border:2px solid var(--altin);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;box-shadow:0 3px 8px rgba(88,0,22,.35)}
 .post-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding-right:34px}
 .post-head h3{font-size:1.05rem;color:var(--bordo-koyu);flex:1 1 100%}
 .chip{font-size:.66rem;font-weight:800;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
@@ -146,36 +98,20 @@ main{padding:16px 14px 8px}
 .post-body{font-size:.92rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .class-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
 .class-tag{font-size:.66rem;font-weight:700;background:var(--altin-soft);color:var(--bordo-koyu);padding:2px 8px;border-radius:6px}
-.post-img{
-  width:100%;margin-top:12px;border-radius:10px;border:1px solid rgba(128,0,32,.15);
-  cursor:zoom-in;display:block;transition:.2s;
-}
+.post-img{width:100%;margin-top:12px;border-radius:10px;border:1px solid rgba(128,0,32,.15);cursor:zoom-in;display:block;transition:.2s}
 .post-img:hover{opacity:.92}
 .post-foot{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
-.del-btn{
-  margin-left:auto;background:#fff;border:1px solid var(--kirmizi);color:var(--kirmizi);
-  font-size:.74rem;font-weight:700;padding:6px 10px;border-radius:8px;transition:.2s;
-}
+.del-btn{margin-left:auto;background:#fff;border:1px solid var(--kirmizi);color:var(--kirmizi);font-size:.74rem;font-weight:700;padding:6px 10px;border-radius:8px;transition:.2s}
 .del-btn:hover{background:var(--kirmizi);color:#fff}
 
-.bos{
-  text-align:center;color:var(--soluk);padding:34px 16px;border:2px dashed rgba(128,0,32,.2);
-  border-radius:var(--r);background:rgba(255,255,255,.6);font-size:.9rem;
-}
+.bos{text-align:center;color:var(--soluk);padding:34px 16px;border:2px dashed rgba(128,0,32,.2);border-radius:var(--r);background:rgba(255,255,255,.6);font-size:.9rem}
 .bos i{display:block;font-size:1.9rem;color:var(--altin);margin-bottom:10px}
 
 label.f-label{display:block;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--bordo);margin:14px 0 6px}
-.f-input,select.f-input,textarea.f-input{
-  width:100%;padding:11px 12px;border:1.5px solid #d9d3de;border-radius:10px;background:#fff;
-  transition:border-color .2s, box-shadow .2s;
-}
+.f-input,select.f-input,textarea.f-input{width:100%;padding:11px 12px;border:1.5px solid #d9d3de;border-radius:10px;background:#fff;transition:border-color .2s, box-shadow .2s}
 .f-input:focus{outline:none;border-color:var(--altin);box-shadow:0 0 0 3px rgba(212,175,55,.22)}
 textarea.f-input{min-height:96px;resize:vertical}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px 18px;border-radius:10px;font-weight:800;font-size:.92rem;border:none;
-  transition:transform .15s ease, box-shadow .15s ease, background .2s;
-}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:10px;font-weight:800;font-size:.92rem;border:none;transition:transform .15s ease, box-shadow .15s ease, background .2s}
 .btn:active{transform:scale(.97)}
 .btn-altin{background:linear-gradient(120deg,var(--altin),#c19b2e);color:var(--bordo-koyu);box-shadow:0 4px 12px rgba(212,175,55,.4)}
 .btn-altin:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(212,175,55,.5)}
@@ -184,30 +120,18 @@ textarea.f-input{min-height:96px;resize:vertical}
 .btn-ghost{background:#fff;border:1.5px solid var(--bordo);color:var(--bordo)}
 .btn-ghost:hover{background:var(--bordo);color:#fff}
 .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
-.file-zone{
-  border:2px dashed rgba(128,0,32,.3);border-radius:10px;padding:12px;background:#fbf9f4;
-}
+.file-zone{border:2px dashed rgba(128,0,32,.3);border-radius:10px;padding:12px;background:#fbf9f4}
 .file-zone input{width:100%;font-size:.82rem}
-.file-chip{
-  display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:.78rem;font-weight:600;
-  background:var(--altin-soft);color:var(--bordo-koyu);padding:6px 10px;border-radius:8px;max-width:100%;
-}
+.file-chip{display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:.78rem;font-weight:600;background:var(--altin-soft);color:var(--bordo-koyu);padding:6px 10px;border-radius:8px;max-width:100%}
 .file-chip button{background:none;border:none;color:var(--bordo);font-weight:800}
 .check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
-.check-item{
-  display:flex;align-items:center;gap:6px;background:#fbf9f4;border:1px solid rgba(128,0,32,.15);
-  border-radius:8px;padding:8px;font-size:.82rem;font-weight:600;transition:.15s;cursor:pointer;
-}
+.check-item{display:flex;align-items:center;gap:6px;background:#fbf9f4;border:1px solid rgba(128,0,32,.15);border-radius:8px;padding:8px;font-size:.82rem;font-weight:600;transition:.15s;cursor:pointer}
 .check-item:hover{border-color:var(--altin)}
 .check-item.full{grid-column:1/-1;background:var(--altin-soft);border-color:var(--altin);font-weight:800}
 .check-item input{accent-color:var(--bordo);width:16px;height:16px}
 .radio-split{display:flex;gap:8px}
-.radio-split label{
-  flex:1;text-align:center;border:1.5px solid rgba(128,0,32,.25);border-radius:10px;
-  padding:11px 6px;font-weight:800;font-size:.86rem;cursor:pointer;transition:.2s;background:#fff;
-}
+.radio-split label{flex:1;text-align:center;border:1.5px solid rgba(128,0,32,.25);border-radius:10px;padding:11px 6px;font-weight:800;font-size:.86rem;cursor:pointer;transition:.2s;background:#fff}
 .radio-split input{display:none}
-.radio-split input:checked + span{color:#fff}
 .radio-split label:has(input:checked){background:var(--bordo);border-color:var(--bordo);color:#fff}
 .super-toggle{width:100%;justify-content:center}
 .super-toggle.aktif{background:var(--bordo-koyu);color:var(--altin);border:2px solid var(--altin)}
@@ -217,69 +141,32 @@ table.notlar th{background:var(--bordo);color:var(--altin);padding:7px 4px;font-
 table.notlar td{padding:7px 4px;text-align:center;border-bottom:1px solid #eee}
 table.notlar tr:hover td{background:#fbf6ea}
 .ort-cell{font-weight:800;color:var(--bordo)}
-.pomo-ring{
-  width:210px;height:210px;border-radius:50%;margin:8px auto 18px;
-  border:6px solid var(--altin-soft);border-top-color:var(--altin);border-right-color:var(--altin);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  background:#fff;box-shadow:var(--golge);transition:.3s;
-}
+.pomo-ring{width:210px;height:210px;border-radius:50%;margin:8px auto 18px;border:6px solid var(--altin-soft);border-top-color:var(--altin);border-right-color:var(--altin);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#fff;box-shadow:var(--golge);transition:.3s}
 .pomo-ring.running{border-top-color:var(--bordo);border-right-color:var(--bordo);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(128,0,32,.07)}}
 .pomo-time{font-family:'Playfair Display',serif;font-size:3rem;font-weight:800;color:var(--bordo-koyu)}
 .pomo-label{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--soluk)}
 .pomo-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:70;
-  max-width:560px;margin:0 auto;
-  background:linear-gradient(180deg,var(--bordo) 0%,var(--bordo-koyu) 100%);
-  border-top:2px solid var(--altin);
-  display:flex;padding-bottom:env(safe-area-inset-bottom);
-  box-shadow:0 -6px 18px rgba(88,0,22,.35);
-}
-.nav-item{
-  flex:1;background:none;border:none;color:rgba(255,255,255,.62);
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:10px 2px 9px;font-size:.62rem;font-weight:700;letter-spacing:.02em;
-  position:relative;transition:.2s;
-}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:70;max-width:560px;margin:0 auto;background:linear-gradient(180deg,var(--bordo) 0%,var(--bordo-koyu) 100%);border-top:2px solid var(--altin);display:flex;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -6px 18px rgba(88,0,22,.35)}
+.nav-item{flex:1;background:none;border:none;color:rgba(255,255,255,.62);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px 9px;font-size:.62rem;font-weight:700;letter-spacing:.02em;position:relative;transition:.2s}
 .nav-item i{font-size:1.12rem;transition:transform .2s}
 .nav-item:hover{color:#fff}
 .nav-item.aktif{color:var(--altin)}
 .nav-item.aktif i{transform:translateY(-2px) scale(1.12)}
-.nav-item.aktif::before{
-  content:'';position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--altin);border-radius:0 0 4px 4px;
-}
+.nav-item.aktif::before{content:'';position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--altin);border-radius:0 0 4px 4px}
 
-.gate{
-  position:fixed;inset:0;z-index:100;overflow-y:auto;
-  background:
-    radial-gradient(circle at 85% 12%, rgba(212,175,55,.16), transparent 42%),
-    radial-gradient(circle at 10% 90%, rgba(212,175,55,.1), transparent 40%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,.022) 0 2px, transparent 2px 16px),
-    linear-gradient(150deg,var(--bordo) 0%,var(--bordo-koyu) 70%,#3d000f 100%);
-  display:flex;align-items:center;justify-content:center;padding:28px 18px;color:#fff;
-}
+.gate{position:fixed;inset:0;z-index:100;overflow-y:auto;background:radial-gradient(circle at 85% 12%, rgba(212,175,55,.16), transparent 42%),radial-gradient(circle at 10% 90%, rgba(212,175,55,.1), transparent 40%),repeating-linear-gradient(135deg, rgba(255,255,255,.022) 0 2px, transparent 2px 16px),linear-gradient(150deg,var(--bordo) 0%,var(--bordo-koyu) 70%,#3d000f 100%);display:flex;align-items:center;justify-content:center;padding:28px 18px;color:#fff}
 .gate-card{width:100%;max-width:420px;text-align:center;animation:gateIn .5s ease}
 @keyframes gateIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.crest{
-  width:104px;height:104px;margin:0 auto 16px;border-radius:50%;
-  border:3px solid var(--altin);outline:1.5px solid rgba(212,175,55,.4);outline-offset:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:800;color:var(--altin);
-  background:radial-gradient(circle at 35% 28%, #8f1134, var(--bordo-koyu));
-  box-shadow:0 10px 30px rgba(0,0,0,.4);letter-spacing:1px;
-}
+.crest{width:104px;height:104px;margin:0 auto 16px;border-radius:50%;border:3px solid var(--altin);outline:1.5px solid rgba(212,175,55,.4);outline-offset:6px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:800;color:var(--altin);background:radial-gradient(circle at 35% 28%, #8f1134, var(--bordo-koyu));box-shadow:0 10px 30px rgba(0,0,0,.4);letter-spacing:1px}
 .gate h1{font-size:1.9rem;font-weight:800;letter-spacing:.02em}
 .gate .motto{color:var(--altin);font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;margin-top:6px}
 .gate .rule{display:flex;align-items:center;gap:10px;margin:18px 0}
 .gate .rule::before,.gate .rule::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--altin))}
 .gate .rule::after{background:linear-gradient(90deg,var(--altin),transparent)}
 .gate .rule i{color:var(--altin);font-size:.6rem}
-.gate-form{
-  background:rgba(30,0,8,.45);border:1px solid rgba(212,175,55,.35);border-radius:16px;
-  padding:20px 18px;text-align:left;backdrop-filter:blur(3px);
-}
+.gate-form{background:rgba(30,0,8,.45);border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:20px 18px;text-align:left;backdrop-filter:blur(3px)}
 .gate-form .f-label{color:var(--altin)}
 .gate-form .f-input{background:#fff}
 .gate-alt{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:.8rem}
@@ -287,15 +174,9 @@ table.notlar tr:hover td{background:#fbf6ea}
 .gate-alt button:hover{color:var(--altin)}
 .gate .v-foot{margin-top:18px;font-size:.68rem;color:rgba(255,255,255,.5);letter-spacing:.14em}
 
-.modal{
-  position:fixed;inset:0;z-index:110;background:rgba(35,0,10,.66);
-  display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease;
-}
+.modal{position:fixed;inset:0;z-index:110;background:rgba(35,0,10,.66);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}}
-.modal-box{
-  width:100%;max-width:480px;background:#fff;border-radius:18px 18px 0 0;overflow:hidden;
-  animation:slideUp .28s cubic-bezier(.2,.9,.3,1.1);
-}
+.modal-box{width:100%;max-width:480px;background:#fff;border-radius:18px 18px 0 0;overflow:hidden;animation:slideUp .28s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes slideUp{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
 .modal-head{background:linear-gradient(120deg,var(--bordo),var(--bordo-koyu));color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--altin)}
 .modal-head h3{font-size:1.05rem;flex:1}
@@ -306,24 +187,20 @@ table.notlar tr:hover td{background:#fbf6ea}
 .lightbox img{max-width:100%;max-height:92vh;border-radius:8px;border:2px solid var(--altin);box-shadow:0 12px 40px rgba(0,0,0,.6)}
 .lightbox .lb-close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;background:var(--altin);border:none;color:var(--bordo-koyu);width:40px;height:40px;border-radius:50%;font-size:1.1rem;font-weight:800}
 #toast-wrap{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:140;display:flex;flex-direction:column;gap:8px;width:min(92%,440px)}
-.toast{
-  background:var(--bordo-koyu);color:#fff;border-left:4px solid var(--altin);
-  padding:12px 14px;border-radius:10px;font-size:.84rem;font-weight:600;
-  box-shadow:0 8px 22px rgba(0,0,0,.35);animation:toastIn .3s ease;
-}
+.toast{background:var(--bordo-koyu);color:#fff;border-left:4px solid var(--altin);padding:12px 14px;border-radius:10px;font-size:.84rem;font-weight:600;box-shadow:0 8px 22px rgba(0,0,0,.35);animation:toastIn .3s ease}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px)}}
 @media (max-width:380px){ .head-titles .name{font-size:.9rem} .nav-item{font-size:.58rem} }
 </style>
 </head>
 <body>
 
+<!-- GİRİŞ KAPISI -->
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="crest">KKL</div>
     <h1>Kandilli Kız Lisesi</h1>
     <div class="motto">Mobil Asistan · v1.08</div>
     <div class="rule"><i class="fa-solid fa-diamond"></i></div>
-
     <div class="gate-form">
       <label class="f-label" for="g-ad">Adın / Lakabın</label>
       <input class="f-input" id="g-ad" maxlength="40" placeholder="örn. Zeynep A.">
@@ -339,7 +216,6 @@ table.notlar tr:hover td{background:#fbf6ea}
         <i class="fa-solid fa-user-graduate"></i> Öğrenci Olarak Başla
       </button>
     </div>
-
     <div class="gate-alt">
       <button onclick="modalAc('modal-ogretmen')"><i class="fa-solid fa-chalkboard-user"></i> Öğretmen Girişi</button>
       <span style="color:rgba(255,255,255,.4)">|</span>
@@ -349,6 +225,7 @@ table.notlar tr:hover td{background:#fbf6ea}
   </div>
 </div>
 
+<!-- ÖĞRETMEN MODALI -->
 <div class="modal hidden" id="modal-ogretmen">
   <div class="modal-box">
     <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.08</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -369,6 +246,7 @@ table.notlar tr:hover td{background:#fbf6ea}
   </div>
 </div>
 
+<!-- İDARE MODALI -->
 <div class="modal hidden" id="modal-idare">
   <div class="modal-box">
     <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.08</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -387,13 +265,11 @@ table.notlar tr:hover td{background:#fbf6ea}
   </div>
 </div>
 
+<!-- UYGULAMA -->
 <div class="app-shell hidden" id="app">
   <header>
     <div class="logo">KKL</div>
-    <div class="head-titles">
-      <div class="name">Kandilli Kız Lisesi</div>
-      <div class="sub">Mobil Asistan</div>
-    </div>
+    <div class="head-titles"><div class="name">Kandilli Kız Lisesi</div><div class="sub">Mobil Asistan</div></div>
     <span class="v-badge">v1.08</span>
     <div class="quick-logins" id="quick-logins">
       <button onclick="ogrenciIcinGate()">Öğrenci</button>
@@ -406,7 +282,6 @@ table.notlar tr:hover td{background:#fbf6ea}
   <div class="profile-strip" id="profile-strip"></div>
 
   <main id="main">
-
     <section data-tab="ogr-duyurular">
       <div class="section-title"><span class="bar"></span><h2>Okul Duyuruları</h2><span class="hint" id="hint-duyuru"></span></div>
       <div class="post-list" id="ogr-duyuru-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
@@ -525,7 +400,6 @@ table.notlar tr:hover td{background:#fbf6ea}
       <div class="section-title"><span class="bar"></span><h2>Öğrenci Akışı</h2><span class="hint">Yeniden eskiye</span></div>
       <div class="post-list" id="akis-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
-
   </main>
 </div>
 
@@ -534,7 +408,8 @@ table.notlar tr:hover td{background:#fbf6ea}
 <div class="lightbox hidden" id="lightbox" onclick="lightboxKapat()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img id="lightbox-img" alt="Büyütülmüş görsel"></div>
 
 <script>
-const CURRENT_VERSION = '1.08';
+/* ══════════ SABİTLER ══════════ */
+const CURRENT_VERSION   = '1.08';
 const SUPABASE_URL      = 'https://jjlmmdwtvtkpgyvncrrk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbG1tZHd0dnRrcGd5dm5jcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2ODIzMDIsImV4cCI6MjEwNTI1ODMwMn0.VLUE7mbG_Ks83y9rMGr9G7DT4762b9_BFFym8jXiuJk';
 const OGRETMEN_SIFRE = 'kandilli_ogretmen';
@@ -562,62 +437,75 @@ const NAVS = {
   ]
 };
 
+/* ══════════ DURUM ══════════ */
 let sb = null;
 const state = { posts:[], session:null, superMode:false, aktifTab:null, notlar:[] };
 const fileState = {};
 
+/* ══════════ YARDIMCILAR ══════════ */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtTarih = d => d ? new Date(d.length===10 ? d+'T00:00:00' : d).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
 const SESSION_KEY = 'kkl_session_v'+CURRENT_VERSION;
 const NOTLAR_KEY  = 'kkl_notlar_v'+CURRENT_VERSION;
+const POSTS_KEY   = 'kkl_posts_v'+CURRENT_VERSION;
 
-['kkl_session','kkl_notlar'].forEach(prefix=>{
-  Object.keys(localStorage).forEach(k=>{
-    if(k.startsWith(prefix+'_v') && k !== prefix+'_v'+CURRENT_VERSION) localStorage.removeItem(k);
+/* eski sürüm anahtarlarını temizle */
+try{
+  ['kkl_session','kkl_notlar','kkl_posts'].forEach(prefix=>{
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith(prefix+'_v') && k !== prefix+'_v'+CURRENT_VERSION) localStorage.removeItem(k);
+    });
   });
-});
+}catch(e){}
 
 function toast(msg){
-  const w = $('#toast-wrap');
+  const w = $('#toast-wrap'); if(!w) return;
   const t = document.createElement('div');
   t.className='toast'; t.textContent = msg;
   w.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 3200);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 3400);
 }
-function modalAc(id){ $('#'+id).classList.remove('hidden'); }
-function modalKapat(id){ $('#'+id).classList.add('hidden'); }
-function ogrenciIcinGate(){ toast('Öğrenci profili zaten bu cihazda kilitli. Değiştirmek için profil şeridindeki "Sıfırla" bağlantısını kullanın.'); }
+function modalAc(id){ const m=$('#'+id); if(m) m.classList.remove('hidden'); }
+function modalKapat(id){ const m=$('#'+id); if(m) m.classList.add('hidden'); }
+function ogrenciIcinGate(){ toast('Öğrenci profili bu cihaza kilitli. Değiştirmek için profil şeridindeki "Profil Sıfırla" bağlantısını kullanın.'); }
 
+/* ══════════ SUPABASE ══════════ */
 function initSupabase(){
   if(!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return false;
   try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
-  catch(e){ return false; }
+  catch(e){ sb=null; return false; }
 }
 function durumGuncelle(){
   const el = $('#durum-dot'); if(!el) return;
   if(sb){ el.textContent='☁ Bulut'; el.className='status-dot status-cloud'; }
   else  { el.textContent='● Yerel Mod'; el.className='status-dot status-local'; }
 }
-function yerelYedekle(){ try{ localStorage.setItem('kkl_posts_v'+CURRENT_VERSION, JSON.stringify(state.posts)); }catch(e){} }
-function yerelYukle(){ try{ return JSON.parse(localStorage.getItem('kkl_posts_v'+CURRENT_VERSION)) || []; }catch(e){ return []; } }
+function yerelYedekle(){ try{ localStorage.setItem(POSTS_KEY, JSON.stringify(state.posts)); }catch(e){} }
+function yerelYukle(){ try{ return JSON.parse(localStorage.getItem(POSTS_KEY)) || []; }catch(e){ return []; } }
 
 async function fetchPosts(){
-  if(sb){
-    const {data, error} = await sb.from('posts').select('*').order('created_at',{ascending:false});
-    if(!error && data){ state.posts = data; yerelYedekle(); durumGuncelle(); return; }
-  }
+  try{
+    if(sb){
+      const {data, error} = await sb.from('posts').select('*').order('created_at',{ascending:false});
+      if(!error && data){ state.posts = data; yerelYedekle(); durumGuncelle(); return; }
+      console.warn('Supabase fetch hatası:', error);
+    }
+  }catch(e){ console.warn('fetchPosts exception:', e); }
   if(state.posts.length===0) state.posts = yerelYukle();
   durumGuncelle();
 }
 
 async function insertPost(p){
-  if(sb){
-    const {error} = await sb.from('posts').insert(p);
-    if(!error){ await fetchPosts(); renderAll(); return true; }
-    toast('Bulut hatası — gönderi yerel moda kaydedildi.');
-  }
+  try{
+    if(sb){
+      const {error} = await sb.from('posts').insert(p);
+      if(!error){ await fetchPosts(); renderAll(); return true; }
+      console.warn('Supabase insert hatası:', error);
+      toast('Bulut kaydı başarısız — gönderi bu cihaz için yerel kaydedildi.');
+    }
+  }catch(e){ console.warn('insertPost exception:', e); toast('Kayıt sırasında hata oluştu, yerel moda alındı.'); }
   p.id = 'lcl-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
   p.created_at = new Date().toISOString();
   state.posts.unshift(p); yerelYedekle(); renderAll();
@@ -625,21 +513,27 @@ async function insertPost(p){
 }
 
 async function deletePost(id){
-  const num = orderMap().get(id);
+  const num = orderMap().get(id) || '?';
   if(!confirm('#'+num+' numaralı paylaşım kalıcı olarak silinecek. Emin misiniz?')) return;
-  if(sb && !String(id).startsWith('lcl-')){
-    const {error} = await sb.from('posts').delete().eq('id', id);
-    if(!error){ await fetchPosts(); renderAll(); toast('Paylaşım silindi.'); return; }
-    toast('Silme hatası, tekrar deneyin.'); return;
-  }
+  try{
+    if(sb && !String(id).startsWith('lcl-')){
+      const {error} = await sb.from('posts').delete().eq('id', id);
+      if(!error){ await fetchPosts(); renderAll(); toast('Paylaşım silindi.'); return; }
+      console.warn('Supabase delete hatası:', error);
+      toast('Silme başarısız: '+ (error.message||'yetki/bağlantı hatası'));
+      return;
+    }
+  }catch(e){ console.warn('deletePost exception:', e); toast('Silme sırasında hata oluştu.'); return; }
   state.posts = state.posts.filter(p=>p.id!==id); yerelYedekle(); renderAll(); toast('Paylaşım silindi.');
 }
 
 function initRealtime(){
   if(!sb) return;
-  sb.channel('posts_changes')
-    .on('postgres_changes', {event:'*', schema:'public', table:'posts'}, ()=>{ fetchPosts().then(renderAll); })
-    .subscribe();
+  try{
+    sb.channel('posts_changes')
+      .on('postgres_changes', {event:'*', schema:'public', table:'posts'}, ()=>{ fetchPosts().then(renderAll); })
+      .subscribe(status=>{ if(status!=='SUBSCRIBED') console.warn('Realtime durum:', status); });
+  }catch(e){ console.warn('Realtime init hatası:', e); }
 }
 
 async function uploadToStorage(file){
@@ -647,25 +541,19 @@ async function uploadToStorage(file){
   try{
     const path = Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
     const {error} = await sb.storage.from('media').upload(path, file, {upsert:true, contentType:file.type});
-    if(error) return null;
+    if(error){ console.warn('Storage upload hatası:', error); return null; }
     return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
-  }catch(e){ return null; }
+  }catch(e){ console.warn('uploadToStorage exception:', e); return null; }
 }
 
-function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-function loadSession(){ 
-  try{ 
-    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
-    if(s && s.role) return s;
-    return null; 
-  }catch(e){ return null; } 
-}
+/* ══════════ OTURUM ══════════ */
+function saveSession(s){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }catch(e){ toast('Oturum kaydedilemedi (depolama hatası).'); } }
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; } }
 
 function ogrenciGiris(){
   const ad = $('#g-ad').value.trim();
   if(ad.length<2){ toast('Lütfen adını veya lakabını yaz.'); return; }
   saveSession({role:'ogrenci', name:ad, sinif:$('#g-sinif').value});
-  modalKapat('modal-idare'); modalKapat('modal-ogretmen');
   boot(); toast('Hoş geldin '+ad+'! Profilin bu cihaza kilitlendi. 🎓');
 }
 function ogretmenGiris(){
@@ -684,16 +572,19 @@ function idareGiris(){
 }
 function cikYap(){
   if(!confirm('Oturum kapatılsın mı?')) return;
-  localStorage.removeItem(SESSION_KEY); location.reload();
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+  location.reload();
 }
 function profilSifirla(){
-  if(!confirm('Profili sıfırlamak istediğine emin misin? Bu işlem cihazındaki TÜM oturum ve not verilerini silecek.')) return;
-  if(!confirm('Son kez soruyoruz: tüm veriler silinecek. Devam edilsin mi?')) return;
-  localStorage.removeItem(SESSION_KEY); localStorage.removeItem(NOTLAR_KEY); location.reload();
+  if(!confirm('Profili sıfırlamak istediğine emin misin? Bu işlem cihazındaki oturum ve not verilerini silecek.')) return;
+  if(!confirm('Son kez: tüm yerel veriler silinecek. Devam edilsin mi?')) return;
+  try{ localStorage.removeItem(SESSION_KEY); localStorage.removeItem(NOTLAR_KEY); }catch(e){}
+  location.reload();
 }
 
+/* ══════════ NAVİGASYON ══════════ */
 function buildNav(){
-  const nav = $('#bottom-nav');
+  const nav = $('#bottom-nav'); if(!nav) return;
   nav.innerHTML = NAVS[state.session.role].map(t =>
     `<button class="nav-item" data-tab="${t.id}" onclick="tabSec('${t.id}')"><i class="fa-solid ${t.icon}"></i><span>${t.label}</span></button>`
   ).join('');
@@ -708,21 +599,20 @@ function tabSec(id){
 }
 
 function profilSeridi(){
-  const s = state.session;
-  let detay = s.role==='ogrenci' ? s.sinif : (s.role==='ogretmen' ? s.brans : s.unvan);
-  let sag = s.role==='ogrenci'
-    ? `<button class="mini-link" onclick="profilSifirla()">Profil Sıfırla</button>`
-    : ``;
+  const s = state.session; if(!s) return;
+  const detay = s.role==='ogrenci' ? s.sinif : (s.role==='ogretmen' ? s.brans : s.unvan);
+  const sag = s.role==='ogrenci' ? `<button class="mini-link" onclick="profilSifirla()">Profil Sıfırla</button>` : ``;
   $('#profile-strip').innerHTML =
     `<i class="fa-solid fa-id-badge" style="color:var(--altin)"></i>
      <span class="who">${esc(s.name)}</span>
      <span class="chip chip-gri">${ROLE_LABEL[s.role]} · ${esc(detay)}</span>
      <span class="status-dot" id="durum-dot"></span>${sag}`;
-  $('#quick-logins').classList.toggle('hidden', true);
-  $('#logout-btn').classList.toggle('hidden', s.role==='ogrenci');
+  $('#quick-logins')?.classList.toggle('hidden', true);
+  $('#logout-btn')?.classList.toggle('hidden', s.role==='ogrenci');
   durumGuncelle();
 }
 
+/* ══════════ VERİ HAZIRLAMA ══════════ */
 function siraliEski(){ return [...state.posts].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at)); }
 function orderMap(){ const m=new Map(); siraliEski().forEach((p,i)=>m.set(p.id, i+1)); return m; }
 const enYeni = arr => [...arr].sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
@@ -748,18 +638,20 @@ function mediaHTML(p){
   return `<button class="btn btn-ghost" style="margin-top:12px;padding:8px 14px;font-size:.8rem" onclick="openPdf('${p.id}')"><i class="fa-solid fa-file-pdf"></i> PDF Görüntüle</button>`;
 }
 
-function postCard(p, {canDelete=false}={}){
-  const num = orderMap().get(p.id) || '•';
+function postCard(p, opts={}){
+  const om = opts.om || orderMap();
+  const num = om.get(p.id) || '•';
   const tip = p.type==='odev'   ? `<span class="chip chip-bordo"><i class="fa-solid fa-book"></i> Ödev</span>`
             : p.type==='yemek'  ? `<span class="chip chip-menu"><i class="fa-solid fa-utensils"></i> Menü</span>`
             :                     `<span class="chip chip-altin"><i class="fa-solid fa-bullhorn"></i> Duyuru</span>`;
   const classes = p.all_school ? ['TÜM OKUL'] : (p.target_classes||[]);
+  const rolEtiket = p.author_role==='ogretmen' ? ' · Öğretmen' : p.author_role==='idare' ? ' · İdare' : '';
   return `
   <article class="post-card">
     <span class="order-badge">#${num}</span>
     <div class="post-head">${tip}${deadlineChip(p)}<h3>${esc(p.title||'')}</h3></div>
     <div class="post-meta">
-      <span><i class="fa-solid fa-user-pen"></i> ${esc(p.author_name)}${p.author_role==='ogretmen'?' · '+esc(p.author_role):''}${p.author_role==='idare'?' · İdare':''}</span>
+      <span><i class="fa-solid fa-user-pen"></i> ${esc(p.author_name)}${rolEtiket}</span>
       <span><i class="fa-regular fa-calendar"></i> ${fmtTarih(p.created_at)}</span>
       ${p.deadline?`<span><i class="fa-solid fa-flag-checkered"></i> ${fmtTarih(p.deadline)}</span>`:''}
     </div>
@@ -767,97 +659,99 @@ function postCard(p, {canDelete=false}={}){
     ${mediaHTML(p)}
     <div class="post-foot">
       <div class="class-tags">${classes.map(c=>`<span class="class-tag">${esc(c)}</span>`).join('')}</div>
-      ${canDelete?`<button class="del-btn" onclick="deletePost('${p.id}')"><i class="fa-solid fa-trash-can"></i> Sil</button>`:''}
+      ${opts.canDelete?`<button class="del-btn" onclick="deletePost('${p.id}')"><i class="fa-solid fa-trash-can"></i> Sil</button>`:''}
     </div>
   </article>`;
 }
+const bosMesaj = (ikon, metin) => `<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`;
 
-function bosMesaj(ikon, metin){ return `<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`; }
-
+/* ══════════ RENDER ══════════ */
 function renderAll(){
   const r = state.session?.role; if(!r) return;
+  const om = orderMap();
   if(r==='ogrenci'){
     const d = enYeni(state.posts.filter(p=>p.type==='duyuru' && ogrenciGorur(p)));
     const o = enYeni(state.posts.filter(p=>p.type==='odev'   && ogrenciGorur(p)));
-    $('#ogr-duyuru-list').innerHTML = d.length? d.map(p=>postCard(p)).join('') : bosMesaj('fa-bullhorn-slash','Henüz yayınlanmış duyuru yok.');
-    $('#ogr-odev-list').innerHTML   = o.length? o.map(p=>postCard(p)).join('') : bosMesaj('fa-mug-hot','Sınıfınıza özel ödev yok. Keyfini çıkarın! ☕');
-    $('#hint-duyuru').textContent = d.length? d.length+' duyuru':'';
-    $('#hint-odev').textContent   = o.length? o.length+' ödev':'';
-    renderMenu(); renderNotlar();
+    const dl = $('#ogr-duyuru-list'); if(dl) dl.innerHTML = d.length? d.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-bullhorn-slash','Henüz yayınlanmış duyuru yok.');
+    const ol = $('#ogr-odev-list'); if(ol) ol.innerHTML = o.length? o.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-mug-hot','Sınıfınıza özel ödev yok. Keyfini çıkarın! ☕');
+    const hd = $('#hint-duyuru'); if(hd) hd.textContent = d.length? d.length+' duyuru':'';
+    const ho = $('#hint-odev'); if(ho) ho.textContent = o.length? o.length+' ödev':'';
+    renderMenu(om); renderNotlar();
   }
   if(r==='ogretmen'){
     const kendi = enYeni(kendiPostlarim());
-    $('#yayin-list').innerHTML = kendi.length? kendi.map(p=>postCard(p,{canDelete:true})).join('') : bosMesaj('fa-inbox','Henüz paylaşım yayınlamadınız.');
+    const yl = $('#yayin-list'); if(yl) yl.innerHTML = kendi.length? kendi.map(p=>postCard(p,{om,canDelete:true})).join('') : bosMesaj('fa-inbox','Henüz paylaşım yayınlamadınız.');
     const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
-    $('#akis-list').innerHTML = akis.length? akis.map(p=>postCard(p)).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+    const al = $('#akis-list'); if(al) al.innerHTML = akis.length? akis.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
   }
   if(r==='idare'){
-    const kendi = enYeni(kendiPostlarim());
-    const liste = state.superMode ? enYeni([...state.posts]) : kendi;
-    $('#yonetim-list').innerHTML = liste.length? liste.map(p=>postCard(p,{canDelete:true})).join('')
+    const liste = state.superMode ? enYeni([...state.posts]) : enYeni(kendiPostlarim());
+    const yl = $('#yonetim-list'); if(yl) yl.innerHTML = liste.length? liste.map(p=>postCard(p,{om,canDelete:true})).join('')
       : bosMesaj('fa-box-open', state.superMode?'Okulda hiç içerik yok.':'Henüz paylaşımınız yok. Süper İdare ile tümünü görüntüleyebilirsiniz.');
     const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
-    $('#akis-list').innerHTML = akis.length? akis.map(p=>postCard(p)).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+    const al = $('#akis-list'); if(al) al.innerHTML = akis.length? akis.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
   }
 }
 
-function renderMenu(){
-  const tumMenuler = state.posts.filter(p=>p.type==='yemek');
-  const m = enYeni(tumMenuler)[0];
-  $('#ogr-menu-box').innerHTML = m
-    ? `<div class="kart altin-top">${postCard(m)}</div>`
-    : bosMesaj('fa-utensils','Menü eklenmedi.');
+function renderMenu(om){
+  const box = $('#ogr-menu-box'); if(!box) return;
+  const m = enYeni(state.posts.filter(p=>p.type==='yemek'))[0];
+  box.innerHTML = m ? postCard(m,{om: om||orderMap()}) : bosMesaj('fa-utensils','Menü eklenmedi.');
 }
-
 function superToggle(){
   state.superMode = !state.superMode;
-  $('#super-btn').classList.toggle('aktif', state.superMode);
-  $('#super-btn').innerHTML = state.superMode
+  const b = $('#super-btn'); if(!b) return;
+  b.classList.toggle('aktif', state.superMode);
+  b.innerHTML = state.superMode
     ? '<i class="fa-solid fa-shield-halved"></i> Süper İdare AKTİF — Tüm okul içerikleri görünüyor'
     : '<i class="fa-solid fa-shield-halved"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)';
   renderAll();
 }
 
+/* ══════════ ŞUBE SEÇİM MANTIĞI ══════════ */
 function buildClassGrid(containerId, prefix){
-  $('#'+containerId).innerHTML =
+  const c = $('#'+containerId); if(!c) return;
+  c.innerHTML =
     `<label class="check-item full"><input type="checkbox" id="${prefix}-all" onchange="tumOkulDegisti('${prefix}')"><span><i class="fa-solid fa-school"></i> Tüm Okul</span></label>`
-    + ALL_CLASSES.map(c=>`<label class="check-item"><input type="checkbox" class="${prefix}-box" value="${c}" onchange="subeDegisti('${prefix}')"><span>${c}</span></label>`).join('');
+    + ALL_CLASSES.map(cl=>`<label class="check-item"><input type="checkbox" class="${prefix}-box" value="${cl}" onchange="subeDegisti('${prefix}')"><span>${cl}</span></label>`).join('');
 }
 function tumOkulDegisti(prefix){
-  const master = $('#'+prefix+'-all').checked;
-  $$('.'+prefix+'-box').forEach(b=>{ b.checked = master; b.disabled = master; });
+  const master = $('#'+prefix+'-all'); if(!master) return;
+  $$('.'+prefix+'-box').forEach(b=>{ b.checked = master.checked; b.disabled = master.checked; });
 }
 function subeDegisti(prefix){
   const hepsi = $$('.'+prefix+'-box').every(b=>b.checked);
   const master = $('#'+prefix+'-all');
-  if(hepsi){ master.checked = true; tumOkulDegisti(prefix); }
+  if(master && hepsi){ master.checked = true; tumOkulDegisti(prefix); }
 }
 function seciliSiniflar(prefix){
-  if($('#'+prefix+'-all').checked) return {all:true, classes:[...ALL_CLASSES]};
+  const master = $('#'+prefix+'-all');
+  if(master && master.checked) return {all:true, classes:[...ALL_CLASSES]};
   return {all:false, classes:$$('.'+prefix+'-box:checked').map(b=>b.value)};
 }
 
+/* ══════════ DOSYA YÜKLEME ══════════ */
 function bindFile(inputId, prevId){
-  const inp = document.getElementById(inputId);
+  const inp = document.getElementById(inputId); if(!inp) return;
   inp.addEventListener('change', ()=>{
     const f = inp.files[0];
     const prev = $('#'+prevId);
-    if(!f){ delete fileState[inputId]; prev.innerHTML=''; return; }
+    if(!f){ delete fileState[inputId]; if(prev) prev.innerHTML=''; return; }
     if(f.size > 8*1024*1024){ toast('Dosya en fazla 8 MB olabilir.'); inp.value=''; return; }
     const kind = f.type==='application/pdf' ? 'pdf' : f.type.startsWith('image/') ? 'image' : null;
     if(!kind){ toast('Sadece görsel veya PDF yükleyebilirsiniz.'); inp.value=''; return; }
     const reader = new FileReader();
     reader.onload = e=>{
       fileState[inputId] = {kind, dataUrl:e.target.result, file:f};
-      prev.innerHTML = `<span class="file-chip"><i class="fa-solid ${kind==='pdf'?'fa-file-pdf':'fa-image'}"></i> ${esc(f.name)} <button type="button" onclick="fileTemizle('${inputId}','${prevId}')">✕</button></span>`;
+      if(prev) prev.innerHTML = `<span class="file-chip"><i class="fa-solid ${kind==='pdf'?'fa-file-pdf':'fa-image'}"></i> ${esc(f.name)} <button type="button" onclick="fileTemizle('${inputId}','${prevId}')">✕</button></span>`;
     };
     reader.readAsDataURL(f);
   });
 }
 function fileTemizle(inputId, prevId){
   delete fileState[inputId];
-  document.getElementById(inputId).value='';
-  $('#'+prevId).innerHTML='';
+  const inp=document.getElementById(inputId); if(inp) inp.value='';
+  const prev=$('#'+prevId); if(prev) prev.innerHTML='';
 }
 async function medyaHazirla(inputId){
   const f = fileState[inputId];
@@ -869,64 +763,74 @@ async function medyaHazirla(inputId){
 }
 function formTemizle(ids, prefix){
   ids.forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
-  $$('input[name="'+prefix+'-tur"]').forEach((r,i)=>r.checked = i===0);
-  if($('#'+prefix+'-all')){ $('#'+prefix+'-all').checked=false; tumOkulDegisti(prefix); }
+  const master = $('#'+prefix+'-all');
+  if(master){ master.checked=false; tumOkulDegisti(prefix); }
 }
 
+/* ══════════ YAYINLAMA ══════════ */
 async function ogretmenYayinla(){
-  const tur = document.querySelector('input[name="t-tur"]:checked').value;
-  const konu = $('#t-konu').value.trim(), metin = $('#t-metin').value.trim();
-  if(!konu){ toast('Ders/konu adı gerekli.'); return; }
-  const hedef = seciliSiniflar('t');
-  if(!hedef.all && hedef.classes.length===0){ toast('En az bir şube seçmelisiniz.'); return; }
-  const btn = $('#t-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
-  const medya = await medyaHazirla('t-file');
-  await insertPost({
-    type:tur, title:konu, body:metin, deadline:$('#t-tarih').value||null,
-    all_school:hedef.all, target_classes:hedef.classes, ...medya,
-    author_name:state.session.name, author_role:'ogretmen'
-  });
-  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-tower-broadcast"></i> Canlıya Yayınla';
-  formTemizle(['t-konu','t-metin','t-tarih'],'t'); fileTemizle('t-file','t-file-prev');
-  toast(tur==='odev'?'Ödev canlıya yayınlandı! ✅':'Duyuru canlıya yayınlandı! ✅');
-  tabSec('yayinlarim');
+  const btn = $('#t-yayinla');
+  try{
+    const tur = document.querySelector('input[name="t-tur"]:checked')?.value || 'odev';
+    const konu = $('#t-konu').value.trim(), metin = $('#t-metin').value.trim();
+    if(!konu){ toast('Ders/konu adı gerekli.'); return; }
+    const hedef = seciliSiniflar('t');
+    if(!hedef.all && hedef.classes.length===0){ toast('En az bir şube seçmelisiniz.'); return; }
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
+    const medya = await medyaHazirla('t-file');
+    await insertPost({
+      type:tur, title:konu, body:metin, deadline:$('#t-tarih').value||null,
+      all_school:hedef.all, target_classes:hedef.classes, ...medya,
+      author_name:state.session.name, author_role:'ogretmen'
+    });
+    formTemizle(['t-konu','t-metin','t-tarih'],'t'); fileTemizle('t-file','t-file-prev');
+    toast(tur==='odev'?'Ödev canlıya yayınlandı! ✅':'Duyuru canlıya yayınlandı! ✅');
+    tabSec('yayinlarim');
+  }catch(e){ console.error('ogretmenYayinla:', e); toast('Yayınlama hatası: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-tower-broadcast"></i> Canlıya Yayınla'; }
 }
-
 async function idareDuyuruYayinla(){
-  const baslik=$('#a-baslik').value.trim(), metin=$('#a-metin').value.trim();
-  if(!baslik && !metin){ toast('Duyuru başlığı veya metni giriniz.'); return; }
-  const hedef = seciliSiniflar('a');
-  if(!hedef.all && hedef.classes.length===0){ toast('Hedef sınıf seçiniz.'); return; }
-  const btn=$('#a-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
-  const medya = await medyaHazirla('a-file');
-  await insertPost({
-    type:'duyuru', title:baslik, body:metin, deadline:null,
-    all_school:hedef.all, target_classes:hedef.classes, ...medya,
-    author_name:state.session.name, author_role:'idare'
-  });
-  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-bullhorn"></i> Duyuruyu Yayınla';
-  formTemizle(['a-baslik','a-metin'],'a'); fileTemizle('a-file','a-file-prev');
-  toast('İdare duyurusu yayınlandı! 📣');
+  const btn = $('#a-yayinla');
+  try{
+    const baslik=$('#a-baslik').value.trim(), metin=$('#a-metin').value.trim();
+    if(!baslik && !metin){ toast('Duyuru başlığı veya metni giriniz.'); return; }
+    const hedef = seciliSiniflar('a');
+    if(!hedef.all && hedef.classes.length===0){ toast('Hedef sınıf seçiniz (veya "Tüm Okul" işaretleyin).'); return; }
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
+    const medya = await medyaHazirla('a-file');
+    await insertPost({
+      type:'duyuru', title:baslik, body:metin, deadline:null,
+      all_school:hedef.all, target_classes:hedef.classes, ...medya,
+      author_name:state.session.name, author_role:'idare'
+    });
+    formTemizle(['a-baslik','a-metin'],'a'); fileTemizle('a-file','a-file-prev');
+    toast('İdare duyurusu yayınlandı! 📣');
+    tabSec('yonetim');
+  }catch(e){ console.error('idareDuyuruYayinla:', e); toast('Duyuru hatası: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-bullhorn"></i> Duyuruyu Yayınla'; }
 }
-
 async function menuGuncelle(){
-  const metin=$('#m-metin').value.trim();
-  if(!metin && !fileState['m-file']){ toast('Menü metni veya dosyası giriniz.'); return; }
-  const btn=$('#m-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Güncelleniyor…';
-  const medya = await medyaHazirla('m-file');
-  await insertPost({
-    type:'yemek', title:'Günün Yemek Menüsü', body:metin, deadline:null,
-    all_school:true, target_classes:[...ALL_CLASSES], ...medya,
-    author_name:state.session.name, author_role:'idare'
-  });
-  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-utensils"></i> Menüyü Güncelle';
-  $('#m-metin').value=''; fileTemizle('m-file','m-file-prev');
-  toast('Yemek menüsü güncellendi! 🍽');
+  const btn = $('#m-yayinla');
+  try{
+    const metin=$('#m-metin').value.trim();
+    if(!metin && !fileState['m-file']){ toast('Menü metni veya dosyası giriniz.'); return; }
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Güncelleniyor…';
+    const medya = await medyaHazirla('m-file');
+    await insertPost({
+      type:'yemek', title:'Günün Yemek Menüsü', body:metin, deadline:null,
+      all_school:true, target_classes:[...ALL_CLASSES], ...medya,
+      author_name:state.session.name, author_role:'idare'
+    });
+    $('#m-metin').value=''; fileTemizle('m-file','m-file-prev');
+    toast('Yemek menüsü güncellendi! 🍽');
+    renderAll();
+  }catch(e){ console.error('menuGuncelle:', e); toast('Menü hatası: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-utensils"></i> Menüyü Güncelle'; }
 }
 
-function openLightbox(src){ $('#lightbox-img').src = src; $('#lightbox').classList.remove('hidden'); }
-function lightboxKapat(){ $('#lightbox').classList.add('hidden'); }
-
+/* ══════════ MEDYA GÖRÜNTÜLEME ══════════ */
+function openLightbox(src){ const lb=$('#lightbox'); const im=$('#lightbox-img'); if(lb&&im){ im.src=src; lb.classList.remove('hidden'); } }
+function lightboxKapat(){ $('#lightbox')?.classList.add('hidden'); }
 function dataUrlToBlob(dataUrl){
   const [meta, b64] = dataUrl.split(',');
   const mime = (meta.match(/data:(.*?)(;|$)/)||[,'application/pdf'])[1];
@@ -944,6 +848,7 @@ function openPdf(id){
   }
 }
 
+/* ══════════ NOTLAR ══════════ */
 function notlariYukle(){ try{ state.notlar = JSON.parse(localStorage.getItem(NOTLAR_KEY))||[]; }catch(e){ state.notlar=[]; } }
 function notlariKaydet(){ try{ localStorage.setItem(NOTLAR_KEY, JSON.stringify(state.notlar)); }catch(e){} }
 function notEkle(){
@@ -952,7 +857,7 @@ function notEkle(){
   const v = id=>{ const n=parseFloat($('#'+id).value); return isNaN(n)?0:Math.min(100,Math.max(0,n)); };
   state.notlar.push({ders, y1:v('n-y1'), y2:v('n-y2'), perf:v('n-perf')});
   notlariKaydet(); renderNotlar();
-  $('#n-ders').value=''; ['n-y1','n-y2','n-perf'].forEach(i=>$('#'+i).value='');
+  $('#n-ders').value=''; ['n-y1','n-y2','n-perf'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   toast('Not kaydedildi. Başarılar! 🌟');
 }
 function notSil(i){ state.notlar.splice(i,1); notlariKaydet(); renderNotlar(); }
@@ -963,20 +868,22 @@ function renderNotlar(){
     return `<tr><td style="text-align:left;font-weight:700">${esc(n.ders)}</td><td>${n.y1}</td><td>${n.y2}</td><td>${n.perf}</td><td class="ort-cell">${ort.toFixed(2)}</td><td><button class="del-btn" style="margin:0;padding:4px 8px" onclick="notSil(${i})"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
   }).join('') : `<tr><td colspan="6" style="color:var(--soluk);padding:16px">Henüz not eklenmedi.</td></tr>`;
   const genel = state.notlar.length ? state.notlar.reduce((a,n)=>a+(n.y1+n.y2+n.perf)/3,0)/state.notlar.length : 0;
-  $('#genel-ort').textContent = genel.toFixed(2);
+  const go=$('#genel-ort'); if(go) go.textContent = genel.toFixed(2);
 }
 
+/* ══════════ POMODORO ══════════ */
 const POMO_SURE = 25*60;
 let pomo = {running:false, endAt:null, remaining:POMO_SURE, iv:null};
 function pomoGoster(sn){
+  const el=$('#pomo-time'); if(!el) return;
   const m=String(Math.floor(sn/60)).padStart(2,'0'), s=String(sn%60).padStart(2,'0');
-  $('#pomo-time').textContent = m+':'+s;
+  el.textContent = m+':'+s;
 }
 function pomoStart(){
   if(pomo.running) return;
   pomo.running=true; pomo.endAt=Date.now()+pomo.remaining*1000;
-  $('#pomo-ring').classList.add('running');
-  $('#pomo-start').innerHTML='<i class="fa-solid fa-hourglass-half"></i> Çalışıyor…';
+  $('#pomo-ring')?.classList.add('running');
+  const st=$('#pomo-start'); if(st) st.innerHTML='<i class="fa-solid fa-hourglass-half"></i> Çalışıyor…';
   pomo.iv=setInterval(()=>{
     const rem=Math.max(0, Math.round((pomo.endAt-Date.now())/1000));
     pomo.remaining=rem; pomoGoster(rem);
@@ -987,12 +894,10 @@ function pomoPause(){
   if(!pomo.running) return;
   pomo.running=false; clearInterval(pomo.iv);
   pomo.remaining=Math.max(0, Math.round((pomo.endAt-Date.now())/1000));
-  $('#pomo-ring').classList.remove('running');
-  $('#pomo-start').innerHTML='<i class="fa-solid fa-play"></i> Başlat';
+  $('#pomo-ring')?.classList.remove('running');
+  const st=$('#pomo-start'); if(st) st.innerHTML='<i class="fa-solid fa-play"></i> Başlat';
 }
-function pomoReset(){
-  pomoPause(); pomo.remaining=POMO_SURE; pomoGoster(POMO_SURE);
-}
+function pomoReset(){ pomoPause(); pomo.remaining=POMO_SURE; pomoGoster(POMO_SURE); }
 function beep(){
   try{
     const ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1006,34 +911,41 @@ function beep(){
   }catch(e){}
 }
 
+/* ══════════ AÇILIŞ ══════════ */
 function boot(){
   state.session = loadSession();
-  if(!state.session || !state.session.role){ 
-    $('#gate').classList.remove('hidden'); 
-    $('#app').classList.add('hidden'); 
-    $('#bottom-nav').classList.add('hidden'); 
-    return; 
+  if(!state.session){
+    $('#gate')?.classList.remove('hidden');
+    $('#app')?.classList.add('hidden');
+    $('#bottom-nav')?.classList.add('hidden');
+    return;
   }
-  $('#gate').classList.add('hidden');
-  $('#app').classList.remove('hidden');
-  $('#bottom-nav').classList.remove('hidden');
-  profilSeridi(); 
+  $('#gate')?.classList.add('hidden');
+  $('#app')?.classList.remove('hidden');
+  $('#bottom-nav')?.classList.remove('hidden');
+  profilSeridi();
   buildNav();
 }
 
 async function init(){
-  initSupabase();
-  buildClassGrid('t-classes','t');
-  buildClassGrid('a-classes','a');
-  bindFile('t-file','t-file-prev');
-  bindFile('a-file','a-file-prev');
-  bindFile('m-file','m-file-prev');
-  notlariYukle(); 
-  pomoGoster(POMO_SURE);
-  $('#t-tarih').min = new Date().toISOString().slice(0,10);
-  await fetchPosts();
-  boot();
-  initRealtime();
+  try{
+    initSupabase();
+    buildClassGrid('t-classes','t');
+    buildClassGrid('a-classes','a');
+    bindFile('t-file','t-file-prev');
+    bindFile('a-file','a-file-prev');
+    bindFile('m-file','m-file-prev');
+    notlariYukle();
+    pomoGoster(POMO_SURE);
+    const dt=$('#t-tarih'); if(dt) dt.min = new Date().toISOString().slice(0,10);
+    boot();                     /* önce arayüz — oturum varsa anında açılır */
+    await fetchPosts();         /* sonra veri */
+    renderAll();
+    initRealtime();
+  }catch(e){
+    console.error('init hatası:', e);
+    boot();                     /* hata olsa bile kullanıcı gate'de kilitlenmesin */
+  }
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
