@@ -1,1004 +1,1068 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kandilli Kız Lisesi v1.07 - Mobil Asistan</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <style>
-        :root {
-            --primary: #800020;
-            --primary-dark: #580016;
-            --accent: #d4af37;
-            --bg: #f4f6f9;
-            --card: #ffffff;
-            --text: #2c3e50;
-            --gray: #7f8c8d;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #c0392b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kandilli Kız Lisesi v1.07 — Mobil Asistan</title>
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 75px; }
+<!--
+═══════════════════════════ KURULUM REHBERİ ═══════════════════════════
+1) Supabase → SQL Editor'da şu sorguyu çalıştırın:
 
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white; padding: 12px 16px;
-            position: sticky; top: 0; z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        header .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
-        .logo-placeholder { 
-            width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent); 
-            background: #fff; color: var(--primary); display: flex; align-items: center; 
-            justify-content: center; font-weight: bold; font-size: 0.85rem;
-        }
-        .version-tag { font-size: 0.75rem; background: var(--accent); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        
-        .header-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white; padding: 6px 10px; border-radius: 8px;
-            font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
-        }
+   create table if not exists posts (
+     id uuid primary key default gen_random_uuid(),
+     type text not null check (type in ('odev','duyuru','yemek')),
+     title text default '',
+     body text default '',
+     target_classes text[] default '{}',
+     all_school boolean default false,
+     media_kind text check (media_kind in ('image','pdf')),
+     media_url text,                       -- Storage public URL (öncelikli)
+     media_data text,                      -- Base64 data URL (fallback)
+     deadline date,
+     author_name text default '',
+     author_role text default '',
+     created_at timestamptz default now()
+   );
+   alter table posts enable row level security;
+   create policy "anon_full_access" on posts for all using (true) with check (true);
+   alter publication supabase_realtime add table posts;
 
-        .user-bar {
-            background: #ffffff; padding: 10px 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid var(--accent);
-        }
-        .user-info { font-size: 0.9rem; font-weight: 600; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; }
-        .logout-btn { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+2) Supabase → Storage'da "media" adında PUBLIC bir bucket oluşturun.
+3) Aşağıdaki SUPABASE_URL ve SUPABASE_ANON_KEY sabitlerini doldurun.
+   Boş bırakılırsa uygulama YEREL MOD'da (cihaz belleği) çalışır.
+   NOT: Anon key'i GitHub'da herkese açık olur; gerçek güvenlik RLS +
+   servis anahtarı ile sağlanır, bu bir okul içi kolaylık uygulamasıdır.
+4) APK: npx cap init && npx cap add android → dist/ içine bu dosyayı koyun.
+════════════════════════════════════════════════════════════════════════
+-->
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(88, 0, 22, 0.95);
-            z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .modal-card {
-            background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 420px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;
-        }
-        .modal-card h2 { color: var(--primary-dark); margin-bottom: 8px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .modal-card p { font-size: 0.85rem; color: var(--gray); margin-bottom: 18px; }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        .image-lightbox {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9); z-index: 3000; display: none;
-            align-items: center; justify-content: center; padding: 15px;
-        }
-        .image-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+<style>
+/* ═══════════ TEMEL ═══════════ */
+:root{
+  --bordo:#800020; --bordo-koyu:#580016; --altin:#d4af37; --altin-soft:#f3e6c0;
+  --bg:#f4f6f9; --kart:#ffffff; --metin:#232028; --soluk:#7a7484;
+  --yesil:#1e7d4f; --kirmizi:#b3261e; --golge:0 6px 18px rgba(88,0,22,.10);
+  --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Archivo',system-ui,sans-serif; color:var(--metin); background:var(--bg);
+  background-image:repeating-linear-gradient(135deg, rgba(128,0,32,.025) 0 2px, transparent 2px 14px);
+  min-height:100dvh;
+}
+h1,h2,h3,.display{font-family:'Playfair Display',Georgia,serif}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:1rem}
+.hidden{display:none !important}
+.app-shell{max-width:560px;margin:0 auto;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 
-        main { padding: 15px; max-width: 650px; margin: 0 auto; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+/* ═══════════ ÜST BAR ═══════════ */
+header{
+  position:sticky;top:0;z-index:60;
+  background:linear-gradient(120deg,var(--bordo) 0%,var(--bordo-koyu) 100%);
+  border-bottom:3px solid var(--altin); color:#fff;
+  padding:10px 14px; display:flex;align-items:center;gap:10px;
+  box-shadow:0 4px 14px rgba(88,0,22,.35);
+}
+.logo{
+  width:44px;height:44px;border-radius:50%;flex:0 0 auto;
+  border:2px solid var(--altin); outline:2px solid rgba(212,175,55,.35); outline-offset:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-weight:800;font-size:.95rem;color:var(--altin);
+  background:radial-gradient(circle at 35% 30%, #7a0c2b, var(--bordo-koyu));
+  letter-spacing:.5px;
+}
+.head-titles{flex:1;min-width:0}
+.head-titles .name{font-family:'Playfair Display',serif;font-weight:700;font-size:1.02rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head-titles .sub{font-size:.68rem;color:var(--altin);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+.v-badge{
+  background:var(--altin);color:var(--bordo-koyu);font-weight:800;font-size:.72rem;
+  padding:3px 9px;border-radius:999px;letter-spacing:.05em;
+}
+.quick-logins{display:flex;gap:6px}
+.quick-logins button{
+  background:transparent;border:1px solid rgba(212,175,55,.7);color:var(--altin);
+  font-size:.7rem;font-weight:700;padding:6px 9px;border-radius:8px;transition:.2s;
+}
+.quick-logins button:hover{background:var(--altin);color:var(--bordo-koyu);transform:translateY(-1px)}
+.logout-btn{
+  background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;
+  width:36px;height:36px;transition:.2s;
+}
+.logout-btn:hover{background:#fff;color:var(--bordo)}
 
-        .card {
-            background: var(--card); border-radius: 12px; padding: 16px;
-            margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-            border-left: 4px solid var(--primary); position: relative;
-        }
-        .card.accent-border { border-left-color: var(--accent); }
-        .card-title { font-weight: 700; color: var(--primary-dark); font-size: 1.05rem; padding-right: 50px; }
-        .card-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 8px; }
-        .card-body { font-size: 0.92rem; line-height: 1.5; color: #444; }
-        
-        .item-number-badge {
-            position: absolute; top: 12px; right: 12px;
-            background: var(--primary); color: white; font-size: 0.75rem;
-            font-weight: bold; padding: 2px 8px; border-radius: 12px;
-        }
+/* profil şeridi */
+.profile-strip{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:#fff;border-bottom:1px solid rgba(128,0,32,.12);
+  padding:8px 14px;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+.profile-strip .who{font-weight:700;color:var(--bordo)}
+.status-dot{font-size:.68rem;padding:2px 8px;border-radius:999px;font-weight:700;letter-spacing:.04em}
+.status-cloud{background:#e3f2e9;color:var(--yesil)}
+.status-local{background:#fdeeee;color:var(--kirmizi)}
+.mini-link{margin-left:auto;background:none;border:none;color:var(--soluk);font-size:.72rem;text-decoration:underline}
+.mini-link:hover{color:var(--kirmizi)}
 
-        .delete-post-btn {
-            position: absolute; top: 12px; right: 50px;
-            color: var(--danger); background: #fdf2f2; border: 1px solid #f8b4b4;
-            width: 26px; height: 26px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 0.8rem; transition: all 0.2s;
-        }
-        .delete-post-btn:hover { background: var(--danger); color: white; }
+/* ═══════════ İÇERİK ═══════════ */
+main{padding:16px 14px 8px}
+.section-title{
+  display:flex;align-items:center;gap:10px;margin:6px 2px 14px;
+}
+.section-title .bar{width:5px;height:26px;background:var(--altin);border-radius:3px}
+.section-title h2{font-size:1.28rem;color:var(--bordo-koyu);font-weight:800}
+.section-title .hint{font-size:.72rem;color:var(--soluk);margin-left:auto;text-align:right}
 
-        .card-attachment { margin-top: 10px; }
-        .card-attachment img { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd; cursor: zoom-in; object-fit: cover; }
-        .pdf-link { display: inline-flex; align-items: center; gap: 6px; background: #e74c3c; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-top: 8px; font-weight: 600; cursor: pointer; }
+.kart{
+  background:var(--kart);border-radius:var(--r);box-shadow:var(--golge);
+  border:1px solid rgba(128,0,32,.08);border-top:3px solid var(--bordo);
+  padding:16px;margin-bottom:14px;
+}
+.kart.altin-top{border-top-color:var(--altin)}
 
-        input, select, textarea, button.btn-submit {
-            width: 100%; padding: 11px; margin-top: 8px;
-            border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none;
-        }
-        button.btn-submit {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 14px;
-        }
+/* içerik kartları */
+.post-list{display:flex;flex-direction:column;gap:16px}
+.post-card{
+  position:relative;background:var(--kart);border-radius:var(--r);
+  border:1px solid rgba(128,0,32,.08);border-left:4px solid var(--altin);
+  box-shadow:var(--golge);padding:16px 14px 14px;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.post-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(88,0,22,.16)}
+.order-badge{
+  position:absolute;top:-11px;right:-7px;min-width:34px;height:34px;padding:0 6px;
+  border-radius:999px;background:var(--bordo);color:var(--altin);
+  border:2px solid var(--altin);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.78rem;box-shadow:0 3px 8px rgba(88,0,22,.35);
+}
+.post-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding-right:34px}
+.post-head h3{font-size:1.05rem;color:var(--bordo-koyu);flex:1 1 100%}
+.chip{font-size:.66rem;font-weight:800;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
+.chip-bordo{background:var(--bordo);color:#fff}
+.chip-altin{background:var(--altin);color:var(--bordo-koyu)}
+.chip-menu{background:var(--bordo-koyu);color:var(--altin)}
+.chip-yesil{background:#e3f2e9;color:var(--yesil)}
+.chip-kirmizi{background:#fdeeee;color:var(--kirmizi)}
+.chip-gri{background:#eceef2;color:#555}
+.post-meta{font-size:.74rem;color:var(--soluk);margin:2px 0 8px;display:flex;gap:10px;flex-wrap:wrap}
+.post-body{font-size:.92rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.class-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.class-tag{font-size:.66rem;font-weight:700;background:var(--altin-soft);color:var(--bordo-koyu);padding:2px 8px;border-radius:6px}
+.post-img{
+  width:100%;margin-top:12px;border-radius:10px;border:1px solid rgba(128,0,32,.15);
+  cursor:zoom-in;display:block;transition:.2s;
+}
+.post-img:hover{opacity:.92}
+.post-foot{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.del-btn{
+  margin-left:auto;background:#fff;border:1px solid var(--kirmizi);color:var(--kirmizi);
+  font-size:.74rem;font-weight:700;padding:6px 10px;border-radius:8px;transition:.2s;
+}
+.del-btn:hover{background:var(--kirmizi);color:#fff}
 
-        .checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; text-align: left; }
-        .checkbox-label { font-size: 0.8rem; background: #f0f3f6; padding: 6px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.bos{
+  text-align:center;color:var(--soluk);padding:34px 16px;border:2px dashed rgba(128,0,32,.2);
+  border-radius:var(--r);background:rgba(255,255,255,.6);font-size:.9rem;
+}
+.bos i{display:block;font-size:1.9rem;color:var(--altin);margin-bottom:10px}
 
-        .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; position: relative; }
-        .todo-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
-        .todo-item.completed .todo-text { text-decoration: line-through; color: var(--gray); }
+/* ═══════════ FORM ELEMANLARI ═══════════ */
+label.f-label{display:block;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--bordo);margin:14px 0 6px}
+.f-input,select.f-input,textarea.f-input{
+  width:100%;padding:11px 12px;border:1.5px solid #d9d3de;border-radius:10px;background:#fff;
+  transition:border-color .2s, box-shadow .2s;
+}
+.f-input:focus{outline:none;border-color:var(--altin);box-shadow:0 0 0 3px rgba(212,175,55,.22)}
+textarea.f-input{min-height:96px;resize:vertical}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:10px;font-weight:800;font-size:.92rem;border:none;
+  transition:transform .15s ease, box-shadow .15s ease, background .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn-altin{background:linear-gradient(120deg,var(--altin),#c19b2e);color:var(--bordo-koyu);box-shadow:0 4px 12px rgba(212,175,55,.4)}
+.btn-altin:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(212,175,55,.5)}
+.btn-bordo{background:var(--bordo);color:#fff}
+.btn-bordo:hover{background:var(--bordo-koyu)}
+.btn-ghost{background:#fff;border:1.5px solid var(--bordo);color:var(--bordo)}
+.btn-ghost:hover{background:var(--bordo);color:#fff}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+.file-zone{
+  border:2px dashed rgba(128,0,32,.3);border-radius:10px;padding:12px;background:#fbf9f4;
+}
+.file-zone input{width:100%;font-size:.82rem}
+.file-chip{
+  display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:.78rem;font-weight:600;
+  background:var(--altin-soft);color:var(--bordo-koyu);padding:6px 10px;border-radius:8px;max-width:100%;
+}
+.file-chip button{background:none;border:none;color:var(--bordo);font-weight:800}
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.check-item{
+  display:flex;align-items:center;gap:6px;background:#fbf9f4;border:1px solid rgba(128,0,32,.15);
+  border-radius:8px;padding:8px;font-size:.82rem;font-weight:600;transition:.15s;cursor:pointer;
+}
+.check-item:hover{border-color:var(--altin)}
+.check-item.full{grid-column:1/-1;background:var(--altin-soft);border-color:var(--altin);font-weight:800}
+.check-item input{accent-color:var(--bordo);width:16px;height:16px}
+.radio-split{display:flex;gap:8px}
+.radio-split label{
+  flex:1;text-align:center;border:1.5px solid rgba(128,0,32,.25);border-radius:10px;
+  padding:11px 6px;font-weight:800;font-size:.86rem;cursor:pointer;transition:.2s;background:#fff;
+}
+.radio-split input{display:none}
+.radio-split input:checked + span{color:#fff}
+.radio-split label:has(input:checked){background:var(--bordo);border-color:var(--bordo);color:#fff}
+.super-toggle{width:100%;justify-content:center}
+.super-toggle.aktif{background:var(--bordo-koyu);color:var(--altin);border:2px solid var(--altin)}
 
-        .pomodoro-box { text-align: center; padding: 20px 10px; }
-        .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary-dark); margin: 15px 0; font-family: monospace; }
-        .timer-controls { display: flex; justify-content: center; gap: 10px; }
-        .timer-btn { padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; border: none; color: white; }
+/* ═══════════ NOTLAR / POMODORO ═══════════ */
+table.notlar{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
+table.notlar th{background:var(--bordo);color:var(--altin);padding:7px 4px;font-size:.7rem;letter-spacing:.06em}
+table.notlar td{padding:7px 4px;text-align:center;border-bottom:1px solid #eee}
+table.notlar tr:hover td{background:#fbf6ea}
+.ort-cell{font-weight:800;color:var(--bordo)}
+.pomo-ring{
+  width:210px;height:210px;border-radius:50%;margin:8px auto 18px;
+  border:6px solid var(--altin-soft);border-top-color:var(--altin);border-right-color:var(--altin);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:#fff;box-shadow:var(--golge);transition:.3s;
+}
+.pomo-ring.running{border-top-color:var(--bordo);border-right-color:var(--bordo);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 10px rgba(128,0,32,.07)}}
+.pomo-time{font-family:'Playfair Display',serif;font-size:3rem;font-weight:800;color:var(--bordo-koyu)}
+.pomo-label{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--solok,#7a7484);color:var(--soluk)}
+.pomo-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th, td { padding: 9px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+/* ═══════════ ALT NAVİGASYON ═══════════ */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:70;
+  max-width:560px;margin:0 auto;
+  background:linear-gradient(180deg,var(--bordo) 0%,var(--bordo-koyu) 100%);
+  border-top:2px solid var(--altin);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -6px 18px rgba(88,0,22,.35);
+}
+.nav-item{
+  flex:1;background:none;border:none;color:rgba(255,255,255,.62);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 2px 9px;font-size:.62rem;font-weight:700;letter-spacing:.02em;
+  position:relative;transition:.2s;
+}
+.nav-item i{font-size:1.12rem;transition:transform .2s}
+.nav-item:hover{color:#fff}
+.nav-item.aktif{color:var(--altin)}
+.nav-item.aktif i{transform:translateY(-2px) scale(1.12)}
+.nav-item.aktif::before{
+  content:'';position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--altin);border-radius:0 0 4px 4px;
+}
 
-        nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: white; display: flex; justify-content: space-around;
-            padding: 8px 0; box-shadow: 0 -3px 12px rgba(0,0,0,0.08); z-index: 100;
-        }
-        nav button {
-            background: none; border: none; color: #888; font-size: 0.7rem;
-            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 25%;
-            transition: color 0.2s;
-        }
-        nav button.active { color: var(--primary); font-weight: 700; }
-        nav button i { font-size: 1.2rem; }
-        .link-btn { background: none; border: none; color: var(--gray); text-decoration: underline; cursor: pointer; font-size: 0.8rem; }
-    </style>
+/* ═══════════ GİRİŞ EKRANI (GATE) ═══════════ */
+.gate{
+  position:fixed;inset:0;z-index:100;overflow-y:auto;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(212,175,55,.16), transparent 42%),
+    radial-gradient(circle at 10% 90%, rgba(212,175,55,.1), transparent 40%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.022) 0 2px, transparent 2px 16px),
+    linear-gradient(150deg,var(--bordo) 0%,var(--bordo-koyu) 70%,#3d000f 100%);
+  display:flex;align-items:center;justify-content:center;padding:28px 18px;color:#fff;
+}
+.gate-card{width:100%;max-width:420px;text-align:center;animation:gateIn .5s ease}
+@keyframes gateIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.crest{
+  width:104px;height:104px;margin:0 auto 16px;border-radius:50%;
+  border:3px solid var(--altin);outline:1.5px solid rgba(212,175,55,.4);outline-offset:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:800;color:var(--altin);
+  background:radial-gradient(circle at 35% 28%, #8f1134, var(--bordo-koyu));
+  box-shadow:0 10px 30px rgba(0,0,0,.4);letter-spacing:1px;
+}
+.gate h1{font-size:1.9rem;font-weight:800;letter-spacing:.02em}
+.gate .motto{color:var(--altin);font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;margin-top:6px}
+.gate .rule{display:flex;align-items:center;gap:10px;margin:18px 0}
+.gate .rule::before,.gate .rule::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--altin))}
+.gate .rule::after{background:linear-gradient(90deg,var(--altin),transparent)}
+.gate .rule i{color:var(--altin);font-size:.6rem}
+.gate-form{
+  background:rgba(30,0,8,.45);border:1px solid rgba(212,175,55,.35);border-radius:16px;
+  padding:20px 18px;text-align:left;backdrop-filter:blur(3px);
+}
+.gate-form .f-label{color:var(--altin)}
+.gate-form .f-input{background:#fff}
+.gate-alt{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:.8rem}
+.gate-alt button{background:none;border:none;color:rgba(255,255,255,.85);font-weight:700;text-decoration:underline;text-underline-offset:4px;font-size:.8rem}
+.gate-alt button:hover{color:var(--altin)}
+.gate .v-foot{margin-top:18px;font-size:.68rem;color:rgba(255,255,255,.5);letter-spacing:.14em}
+
+/* ═══════════ MODALLAR ═══════════ */
+.modal{
+  position:fixed;inset:0;z-index:110;background:rgba(35,0,10,.66);
+  display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0}}
+.modal-box{
+  width:100%;max-width:480px;background:#fff;border-radius:18px 18px 0 0;overflow:hidden;
+  animation:slideUp .28s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
+.modal-head{background:linear-gradient(120deg,var(--bordo),var(--bordo-koyu));color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--altin)}
+.modal-head h3{font-size:1.05rem;flex:1}
+.modal-head .x{background:none;border:none;color:var(--altin);font-size:1.2rem}
+.modal-body{padding:6px 18px 22px}
+
+/* ═══════════ LIGHTBOX & TOAST ═══════════ */
+.lightbox{position:fixed;inset:0;z-index:130;background:rgba(10,0,4,.92);display:flex;align-items:center;justify-content:center;padding:18px;animation:fadeIn .2s}
+.lightbox img{max-width:100%;max-height:92vh;border-radius:8px;border:2px solid var(--altin);box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.lightbox .lb-close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;background:var(--altin);border:none;color:var(--bordo-koyu);width:40px;height:40px;border-radius:50%;font-size:1.1rem;font-weight:800}
+#toast-wrap{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:140;display:flex;flex-direction:column;gap:8px;width:min(92%,440px)}
+.toast{
+  background:var(--bordo-koyu);color:#fff;border-left:4px solid var(--altin);
+  padding:12px 14px;border-radius:10px;font-size:.84rem;font-weight:600;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);animation:toastIn .3s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}}
+@media (max-width:380px){ .head-titles .name{font-size:.9rem} .nav-item{font-size:.58rem} }
+</style>
 </head>
 <body>
 
-    <!-- TAM EKRAN RESİM ÖNİZLEME -->
-    <div id="image-lightbox" class="image-lightbox" onclick="closeLightbox()">
-        <img id="lightbox-img" src="" alt="Önizleme">
+<!-- ══════════════════ GİRİŞ KAPISI ══════════════════ -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="crest">KKL</div>
+    <h1>Kandilli Kız Lisesi</h1>
+    <div class="motto">Mobil Asistan · v1.07</div>
+    <div class="rule"><i class="fa-solid fa-diamond"></i></div>
+
+    <div class="gate-form">
+      <label class="f-label" for="g-ad">Adın / Lakabın</label>
+      <input class="f-input" id="g-ad" maxlength="40" placeholder="örn. Zeynep A.">
+      <label class="f-label" for="g-sinif">Sınıf / Şube Seçiniz</label>
+      <select class="f-input" id="g-sinif">
+        <option value="9-A">9-A</option><option value="9-B">9-B</option>
+        <option value="10-A">10-A</option><option value="10-B">10-B</option>
+        <option value="11-A">11-A (Sayısal)</option><option value="11-B">11-B (EA)</option>
+        <option value="12-A">12-A (Sayısal)</option><option value="12-B">12-B (EA)</option>
+      </select>
+      <label class="f-label">&nbsp;</label>
+      <button class="btn btn-altin" style="width:100%" onclick="ogrenciGiris()">
+        <i class="fa-solid fa-user-graduate"></i> Öğrenci Olarak Başla
+      </button>
     </div>
 
-    <!-- 1. ÖĞRENCİ KARŞILAMA EKRANI -->
-    <div id="student-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <i class="fas fa-graduation-cap" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Kandilli Kız Lisesi <span class="version-tag">v1.07</span></h2>
-            <p>Mobil Asistana Hoş Geldiniz. Lütfen bilgilerinizi giriniz.</p>
-            
-            <input type="text" id="login-student-name" placeholder="Adınız veya Lakabınız">
-            <select id="login-student-class">
-                <option value="">Sınıf / Şube Seçiniz</option>
-                <option value="9A">9-A</option><option value="9B">9-B</option>
-                <option value="10A">10-A</option><option value="10B">10-B</option>
-                <option value="11A">11-A (Sayısal)</option><option value="11B">11-B (EA)</option>
-                <option value="12A">12-A (Sayısal)</option><option value="12B">12-B (EA)</option>
-            </select>
-            
-            <button class="btn-submit" onclick="ogrenciGirisKaydet()">Öğrenci Olarak Başla</button>
-            
-            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: center; gap: 10px;">
-                <button class="link-btn" onclick="openAuthModal('ogretmen')">Öğretmen Girişi</button> | 
-                <button class="link-btn" onclick="openAuthModal('idare')">İdare Girişi</button>
-            </div>
-        </div>
+    <div class="gate-alt">
+      <button onclick="modalAc('modal-ogretmen')"><i class="fa-solid fa-chalkboard-user"></i> Öğretmen Girişi</button>
+      <span style="color:rgba(255,255,255,.4)">|</span>
+      <button onclick="modalAc('modal-idare')"><i class="fa-solid fa-building-columns"></i> İdare Girişi</button>
     </div>
+    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 1.07 · EYLÜL 2026</div>
+  </div>
+</div>
 
-    <!-- 2. ÖĞRETMEN GİRİŞ MODAL -->
-    <div id="teacher-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <i class="fas fa-chalkboard-teacher" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>Öğretmen Girişi <span class="version-tag">v1.07</span></h2>
-            <p>Öğretmen Profili Oluşturma</p>
-            
-            <input type="password" id="teacher-pass-input" placeholder="Öğretmen Şifresi">
-            <input type="text" id="teacher-name-input" placeholder="Adınız Soyadınız">
-            <select id="teacher-branch-input">
-                <option value="">Branşınızı Seçin</option>
-                <option value="Fizik">Fizik</option><option value="Matematik">Matematik</option>
-                <option value="Kimya">Kimya</option><option value="Biyoloji">Biyoloji</option>
-                <option value="Edebiyat">Türk Dili ve Edebiyatı</option><option value="Tarih">Tarih</option>
-                <option value="Coğrafya">Coğrafya</option><option value="İngilizce">İngilizce</option>
-                <option value="Rehberlik">Rehberlik</option><option value="Diğer">Diğer</option>
-            </select>
-            
-            <button class="btn-submit" onclick="ogretmenGirisKaydet()">Giriş Yap ve Kaydet</button>
-            <button class="link-btn" style="margin-top:10px;" onclick="closeModals()">İptal / Geri Dön</button>
-        </div>
+<!-- ÖĞRETMEN MODALI -->
+<div class="modal hidden" id="modal-ogretmen">
+  <div class="modal-box">
+    <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.07</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <label class="f-label" for="o-sifre">Öğretmen Şifresi</label>
+      <input class="f-input" id="o-sifre" type="password" placeholder="••••••••">
+      <label class="f-label" for="o-ad">Ad – Soyad</label>
+      <input class="f-input" id="o-ad" maxlength="60" placeholder="örn. Ayşe Yılmaz">
+      <label class="f-label" for="o-brans">Branşınızı Seçin</label>
+      <select class="f-input" id="o-brans">
+        <option>Fizik</option><option>Matematik</option><option>Kimya</option><option>Biyoloji</option>
+        <option>Türk Dili ve Edebiyatı</option><option>Tarih</option><option>Coğrafya</option>
+        <option>İngilizce</option><option>Rehberlik</option><option>Diğer</option>
+      </select>
+      <label class="f-label">&nbsp;</label>
+      <button class="btn btn-bordo" style="width:100%" onclick="ogretmenGiris()"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap ve Kaydet</button>
     </div>
+  </div>
+</div>
 
-    <!-- 3. İDARE GİRİŞ MODAL -->
-    <div id="admin-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2>İdare Girişi <span class="version-tag">v1.07</span></h2>
-            <p>Yönetici Profili Oluşturma</p>
-            
-            <input type="password" id="admin-pass-input" placeholder="İdare Şifresi">
-            <input type="text" id="admin-name-input" placeholder="Adınız Soyadınız">
-            <select id="admin-title-input">
-                <option value="">Unvanınızı Seçin</option>
-                <option value="Okul Müdürü">Okul Müdürü</option>
-                <option value="Müdür Başyardımcısı">Müdür Başyardımcısı</option>
-                <option value="Müdür Yardımcısı">Müdür Yardımcısı</option>
-            </select>
-            
-            <button class="btn-submit" onclick="idareGirisKaydet()">Giriş Yap ve Kaydet</button>
-            <button class="link-btn" style="margin-top:10px;" onclick="closeModals()">İptal / Geri Dön</button>
-        </div>
+<!-- İDARE MODALI -->
+<div class="modal hidden" id="modal-idare">
+  <div class="modal-box">
+    <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.07</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <label class="f-label" for="i-sifre">İdare Şifresi</label>
+      <input class="f-input" id="i-sifre" type="password" placeholder="••••••••">
+      <label class="f-label" for="i-ad">Ad – Soyad</label>
+      <input class="f-input" id="i-ad" maxlength="60" placeholder="örn. Mehmet Demir">
+      <label class="f-label" for="i-unvan">Unvanınızı Seçin</label>
+      <select class="f-input" id="i-unvan">
+        <option>Okul Müdürü</option><option>Müdür Başyardımcısı</option><option>Müdür Yardımcısı</option>
+      </select>
+      <label class="f-label">&nbsp;</label>
+      <button class="btn btn-bordo" style="width:100%" onclick="idareGiris()"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap ve Kaydet</button>
     </div>
+  </div>
+</div>
 
-    <!-- HEADER -->
-    <header>
-        <div class="brand">
-            <div class="logo-placeholder">KKL</div>
-            <span>Kandilli Kız Lisesi</span>
-            <span class="version-tag">v1.07</span>
-        </div>
-        <div id="admin-header-btns" style="display: flex; gap: 5px;">
-            <button class="header-btn" onclick="openAuthModal('ogrenci')"><i class="fas fa-user-graduate"></i> Öğrenci</button>
-            <button class="header-btn" onclick="openAuthModal('ogretmen')"><i class="fas fa-chalkboard-teacher"></i> Öğretmen</button>
-            <button class="header-btn" onclick="openAuthModal('idare')"><i class="fas fa-user-shield"></i> İdare</button>
-        </div>
-    </header>
-
-    <!-- KULLANICI / ROL BİLGİ BARI -->
-    <div class="user-bar" id="user-bar" style="display: none;">
-        <div class="user-info">
-            <i class="fas fa-user-circle"></i> <span id="display-user-info">Profil Bilgisi</span>
-        </div>
-        <button class="logout-btn" id="logout-btn" style="display:none;" onclick="oturumKapat()">Çıkış Yap</button>
+<!-- ══════════════════ UYGULAMA ══════════════════ -->
+<div class="app-shell hidden" id="app">
+  <header>
+    <div class="logo">KKL</div>
+    <div class="head-titles">
+      <div class="name">Kandilli Kız Lisesi</div>
+      <div class="sub">Mobil Asistan</div>
     </div>
-
-    <main>
-        <!-- ÖĞRENCİ SEKMELERİ -->
-        <section id="duyurular" class="tab-content active">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> Okul Duyuruları</h2>
-            <div id="duyuru-container"><p style="text-align:center; color:#888;">Henüz yayınlanmış duyuru yok.</p></div>
-        </section>
-
-        <section id="odevler" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-tasks"></i> Akşam Ödev Takibi</h2>
-            <div class="card accent-border">
-                <div class="card-title"><i class="fas fa-check-circle"></i> Sınıfınıza Özel Ödevler</div>
-                <div id="odev-container" style="margin-top: 10px;">
-                    <p style="text-align:center; color:#888;">Bu sınıf için ödev bulunmuyor.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="program" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calendar-alt"></i> Ders Programı & Yemek Menüsü</h2>
-            <div class="card">
-                <div class="card-title"><i class="fas fa-utensils"></i> Haftalık Yemek Menüsü</div>
-                <div class="card-body" id="yemek-container" style="margin-top: 6px; font-weight:600;">Menü eklenmedi.</div>
-                <div id="yemek-file-container"></div>
-            </div>
-        </section>
-
-        <section id="notlar" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-calculator"></i> Kişisel Not Takibi</h2>
-            <div class="card">
-                <div class="card-title">Ders Notu Ekle</div>
-                <input type="text" id="ders-adi" placeholder="Ders Adı (Örn: Fizik)">
-                <div style="display:flex; gap: 6px;">
-                    <input type="number" id="yazili-1" placeholder="1. Yazılı">
-                    <input type="number" id="yazili-2" placeholder="2. Yazılı">
-                    <input type="number" id="performans" placeholder="Perf/Sözlü">
-                </div>
-                <button class="btn-submit" onclick="notEkle()">Hesapla & Kaydet</button>
-            </div>
-            <div class="card">
-                <table>
-                    <thead><tr><th>Ders</th><th>Y1</th><th>Y2</th><th>Perf</th><th>Ort.</th><th></th></tr></thead>
-                    <tbody id="not-tablosu"></tbody>
-                </table>
-                <div id="belge-durumu" style="margin-top: 12px; font-weight: bold; text-align: center;">Ortalama: 0.00</div>
-            </div>
-        </section>
-
-        <section id="pomodoro" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-stopwatch"></i> Pomodoro Çalışma Sayacı</h2>
-            <div class="card pomodoro-box">
-                <div class="timer-display" id="timer-display">25:00</div>
-                <div class="timer-controls">
-                    <button class="timer-btn" style="background:var(--success)" onclick="startTimer()">Başlat</button>
-                    <button class="timer-btn" style="background:var(--warning)" onclick="pauseTimer()">Durdur</button>
-                    <button class="timer-btn" style="background:var(--danger)" onclick="resetTimer()">Sıfırla</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ÖĞRETMEN ÖZEL PANELERİ -->
-        <section id="panel-ogretmen-ekle" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-plus-circle"></i> Ödev veya Duyuru Ekle</h2>
-            <div class="card accent-border">
-                <label style="font-size:0.85rem; font-weight:bold;">1. Paylaşım Türü:</label>
-                <select id="ogretmen-post-type">
-                    <option value="odev">Ödev Ver</option>
-                    <option value="duyuru">Duyuru Yap</option>
-                </select>
-
-                <input type="text" id="ogretmen-ders" placeholder="Ders / Konu Adı (Örn: Fizik)">
-                
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Son Teslim / Geçerlilik Tarihi:</label>
-                <input type="date" id="ogretmen-tarih">
-
-                <textarea id="ogretmen-icerik" rows="3" placeholder="Açıklama / Detaylar..."></textarea>
-
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">2. Hedef Sınıf / Şubeler:</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb" value="ALL" id="cb-all-ogretmen" onchange="toggleAllClasses('ogretmen')"> Tüm Okul</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="9A" onchange="checkSubClasses('ogretmen')"> 9-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="9B" onchange="checkSubClasses('ogretmen')"> 9-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="10A" onchange="checkSubClasses('ogretmen')"> 10-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="10B" onchange="checkSubClasses('ogretmen')"> 10-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="11A" onchange="checkSubClasses('ogretmen')"> 11-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="11B" onchange="checkSubClasses('ogretmen')"> 11-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="12A" onchange="checkSubClasses('ogretmen')"> 12-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="cls-cb cls-sub-ogretmen" value="12B" onchange="checkSubClasses('ogretmen')"> 12-B</label>
-                </div>
-
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:12px; display:block;">3. Resim veya PDF Ekleyin (Opsiyonel):</label>
-                <input type="file" id="ogretmen-file" accept="image/*,.pdf">
-
-                <button class="btn-submit" onclick="ogretmenPaylasimYap()">Canlıya Yayınla</button>
-            </div>
-        </section>
-
-        <section id="panel-ogretmen-liste" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-history"></i> Yayınladığım Ödev & Duyurular</h2>
-            <div id="ogretmen-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
-        </section>
-
-        <!-- İDARE ÖZEL PANELERİ -->
-        <section id="panel-idare-ekle" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-bullhorn"></i> İdare Duyuru & Menü Ekle</h2>
-            <div class="card">
-                <div class="card-title">1. Okul Duyurusu Yayınla</div>
-                <input type="text" id="idare-baslik" placeholder="Duyuru Başlığı">
-                <textarea id="idare-icerik" rows="3" placeholder="Duyuru Metni..."></textarea>
-                
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Hedef Sınıflar:</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb" value="ALL" id="cb-all-idare" checked onchange="toggleAllClasses('idare')"> Tüm Okul</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="9A" checked disabled onchange="checkSubClasses('idare')"> 9-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="9B" checked disabled onchange="checkSubClasses('idare')"> 9-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="10A" checked disabled onchange="checkSubClasses('idare')"> 10-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="10B" checked disabled onchange="checkSubClasses('idare')"> 10-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="11A" checked disabled onchange="checkSubClasses('idare')"> 11-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="11B" checked disabled onchange="checkSubClasses('idare')"> 11-B</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="12A" checked disabled onchange="checkSubClasses('idare')"> 12-A</label>
-                    <label class="checkbox-label"><input type="checkbox" class="idare-cls-cb cls-sub-idare" value="12B" checked disabled onchange="checkSubClasses('idare')"> 12-B</label>
-                </div>
-
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Görsel veya PDF Dosyası:</label>
-                <input type="file" id="idare-file" accept="image/*,.pdf">
-
-                <button class="btn-submit" onclick="idareDuyuruYayinla()">Duyuruyu Yayınla</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">2. Haftalık Yemek Menüsü</div>
-                <textarea id="idare-yemek" rows="2" placeholder="Menü Detayları / Açıklama..."></textarea>
-                
-                <label style="font-size:0.85rem; font-weight:bold; margin-top:10px; display:block;">Menü Görseli veya PDF Listesi:</label>
-                <input type="file" id="idare-yemek-file" accept="image/*,.pdf">
-
-                <button class="btn-submit" onclick="yemekGuncelle()">Haftalık Menüyü Güncelle</button>
-            </div>
-        </section>
-
-        <section id="panel-idare-liste" class="tab-content">
-            <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-list-alt"></i> İçerik Yönetim Paneli</h2>
-            
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button class="btn-submit" style="margin-top:0; background:var(--primary);" onclick="idarePostlariniGetir('my')">Benim Duyurularım</button>
-                <button class="btn-submit" style="margin-top:0; background:var(--accent); color:var(--primary-dark);" onclick="idarePostlariniGetir('all')"><i class="fas fa-shield-alt"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)</button>
-            </div>
-
-            <div id="idare-postlar-container"><p style="text-align:center; color:#888;">Yükleniyor...</p></div>
-        </section>
-    </main>
-
-    <!-- ROL DİNAMİK ALT MENÜ -->
-    <nav id="bottom-nav"></nav>
-
-    <script>
-        // SÜRÜM KONTROLÜ
-        const CURRENT_VERSION = "1.07";
-        const savedVersion = localStorage.getItem('kk_app_version');
-        if (savedVersion !== CURRENT_VERSION) {
-            localStorage.removeItem('kk_active_session');
-            localStorage.setItem('kk_app_version', CURRENT_VERSION);
-        }
-
-        const SUPABASE_URL = 'https://npsuvaygtvdoiucfntsc.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wc3V2YXlndHZkb2l1Y2ZudHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2Nzg2MzgsImV4cCI6MjEwNTI1NDYzOH0.oxU8I21HcF4Y97UkPnNnm7TxNxS2fHlJjfoYsGrdM5s';
-        
-        let supabaseClient;
-        if (typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-
-        const OGRETMEN_SIFRE = "kandilli_ogretmen";
-        const IDARE_SIFRE = "kandilli_idare";
-
-        let duyurular = [];
-        let odevler = [];
-        let yemekData = { text: "Menü eklenmedi.", file: null };
-        let dersNotlari = JSON.parse(localStorage.getItem('kk_notlar')) || [];
-
-        let activeSession = JSON.parse(localStorage.getItem('kk_active_session')) || null;
-
-        // "Tüm Okul" - Şube Seçim Çakışma Önleyici Mantık
-        function toggleAllClasses(role) {
-            const allCb = document.getElementById(role === 'ogretmen' ? 'cb-all-ogretmen' : 'cb-all-idare');
-            const subCbs = document.querySelectorAll(role === 'ogretmen' ? '.cls-sub-ogretmen' : '.cls-sub-idare');
-            
-            subCbs.forEach(cb => {
-                cb.checked = allCb.checked;
-                cb.disabled = allCb.checked; // Tüm okul seçiliyken şubeler pasifleşir
-            });
-        }
-
-        function checkSubClasses(role) {
-            const allCb = document.getElementById(role === 'ogretmen' ? 'cb-all-ogretmen' : 'cb-all-idare');
-            const subCbs = document.querySelectorAll(role === 'ogretmen' ? '.cls-sub-ogretmen' : '.cls-sub-idare');
-            let allChecked = true;
-            subCbs.forEach(cb => { if(!cb.checked) allChecked = false; });
-            allCb.checked = allChecked;
-        }
-
-        function openLightbox(src) {
-            document.getElementById('lightbox-img').src = src;
-            document.getElementById('image-lightbox').style.display = 'flex';
-        }
-        function closeLightbox() {
-            document.getElementById('image-lightbox').style.display = 'none';
-        }
-
-        function openPdf(base64Data) {
-            const arr = base64Data.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            const blob = new Blob([u8arr], { type: mime });
-            const blobUrl = URL.createObjectURL(blob);
-            window.open(blobUrl, '_blank');
-        }
-
-        function closeModals() {
-            document.getElementById('student-modal').style.display = 'none';
-            document.getElementById('teacher-modal').style.display = 'none';
-            document.getElementById('admin-modal').style.display = 'none';
-        }
-
-        function openAuthModal(role) {
-            closeModals();
-            if(role === 'ogrenci') document.getElementById('student-modal').style.display = 'flex';
-            if(role === 'ogretmen') document.getElementById('teacher-modal').style.display = 'flex';
-            if(role === 'idare') document.getElementById('admin-modal').style.display = 'flex';
-        }
-
-        function ogrenciGirisKaydet() {
-            let name = document.getElementById('login-student-name').value.trim();
-            let cls = document.getElementById('login-student-class').value;
-
-            if(!name || !cls) return alert("Lütfen adınızı ve sınıfınızı seçin.");
-
-            activeSession = { role: 'student', name: name, detail: cls };
-            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
-            closeModals();
-            sessionUygula();
-        }
-
-        function ogretmenGirisKaydet() {
-            let pass = document.getElementById('teacher-pass-input').value;
-            let name = document.getElementById('teacher-name-input').value.trim();
-            let branch = document.getElementById('teacher-branch-input').value;
-
-            if(pass !== OGRETMEN_SIFRE) return alert("Hatalı Öğretmen Şifresi!");
-            if(!name || !branch) return alert("Lütfen adınızı ve branşınızı seçin.");
-
-            activeSession = { role: 'teacher', name: name, detail: branch };
-            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
-            closeModals();
-            sessionUygula();
-        }
-
-        function idareGirisKaydet() {
-            let pass = document.getElementById('admin-pass-input').value;
-            let name = document.getElementById('admin-name-input').value.trim();
-            let title = document.getElementById('admin-title-input').value;
-
-            if(pass !== IDARE_SIFRE) return alert("Hatalı İdare Şifresi!");
-            if(!name || !title) return alert("Lütfen adınızı ve unvanınızı seçin.");
-
-            activeSession = { role: 'admin', name: name, detail: title };
-            localStorage.setItem('kk_active_session', JSON.stringify(activeSession));
-            closeModals();
-            sessionUygula();
-        }
-
-        function oturumKapat() {
-            if(confirm("Oturum kapatılsın mı?")) {
-                localStorage.removeItem('kk_active_session');
-                activeSession = null;
-                location.reload();
-            }
-        }
-
-        function renderBottomNav() {
-            const nav = document.getElementById('bottom-nav');
-            if(!activeSession || activeSession.role === 'student') {
-                nav.innerHTML = `
-                    <button class="nav-btn active" onclick="tabDegistir('duyurular', this)"><i class="fas fa-bullhorn"></i>Duyurular</button>
-                    <button class="nav-btn" onclick="tabDegistir('odevler', this)"><i class="fas fa-tasks"></i>Ödevler</button>
-                    <button class="nav-btn" onclick="tabDegistir('program', this)"><i class="fas fa-calendar-alt"></i>Program</button>
-                    <button class="nav-btn" onclick="tabDegistir('notlar', this)"><i class="fas fa-calculator"></i>Notlarım</button>
-                    <button class="nav-btn" onclick="tabDegistir('pomodoro', this)"><i class="fas fa-stopwatch"></i>Pomodoro</button>
-                `;
-            } else if(activeSession.role === 'teacher') {
-                nav.innerHTML = `
-                    <button class="nav-btn active" onclick="tabDegistir('panel-ogretmen-ekle', this)"><i class="fas fa-plus-circle"></i>Ödev/Duyuru Ekle</button>
-                    <button class="nav-btn" onclick="tabDegistir('panel-ogretmen-liste', this); ogretmenPostlariniGetir();"><i class="fas fa-history"></i>Yayınladıklarım</button>
-                    <button class="nav-btn" onclick="tabDegistir('duyurular', this)"><i class="fas fa-eye"></i>Öğrenci Akışı</button>
-                `;
-            } else if(activeSession.role === 'admin') {
-                nav.innerHTML = `
-                    <button class="nav-btn active" onclick="tabDegistir('panel-idare-ekle', this)"><i class="fas fa-bullhorn"></i>Duyuru/Menü Ekle</button>
-                    <button class="nav-btn" onclick="tabDegistir('panel-idare-liste', this); idarePostlariniGetir('my');"><i class="fas fa-list-alt"></i>İçerik Yönetimi</button>
-                    <button class="nav-btn" onclick="tabDegistir('duyurular', this)"><i class="fas fa-eye"></i>Öğrenci Akışı</button>
-                `;
-            }
-        }
-
-        function sessionUygula() {
-            closeModals();
-            renderBottomNav();
-            
-            const today = new Date().toISOString().split('T')[0];
-            const tInput = document.getElementById('ogretmen-tarih');
-            if(tInput) tInput.value = today;
-
-            if(activeSession) {
-                document.getElementById('user-bar').style.display = 'flex';
-                let infoElem = document.getElementById('display-user-info');
-                let logoutBtn = document.getElementById('logout-btn');
-                let adminHeaderBtns = document.getElementById('admin-header-btns');
-
-                if(activeSession.role === 'student') {
-                    infoElem.innerText = `${activeSession.name} (${activeSession.detail})`;
-                    logoutBtn.style.display = 'none';
-                    adminHeaderBtns.style.display = 'none';
-                    tabDegistir('duyurular');
-                } else if(activeSession.role === 'teacher') {
-                    infoElem.innerText = `Öğretmen: ${activeSession.name} (${activeSession.detail})`;
-                    logoutBtn.style.display = 'block';
-                    adminHeaderBtns.style.display = 'none';
-                    tabDegistir('panel-ogretmen-ekle');
-                } else if(activeSession.role === 'admin') {
-                    infoElem.innerText = `${activeSession.detail}: ${activeSession.name}`;
-                    logoutBtn.style.display = 'block';
-                    adminHeaderBtns.style.display = 'none';
-                    tabDegistir('panel-idare-ekle');
-                }
-                duyurulariGetir();
-                odevleriGetir();
-            } else {
-                document.getElementById('student-modal').style.display = 'flex';
-                document.getElementById('user-bar').style.display = 'none';
-                document.getElementById('admin-header-btns').style.display = 'flex';
-            }
-        }
-
-        function tabDegistir(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            let hedefTab = document.getElementById(tabId);
-            if(hedefTab) hedefTab.classList.add('active');
-            if(btn) btn.classList.add('active');
-        }
-
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve({ data: reader.result, name: file.name, type: file.type });
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        async function bulutVerileriniYukle() {
-            if (!supabaseClient) {
-                duyurulariGetir(); odevleriGetir(); return;
-            }
-            try {
-                let { data, error } = await supabaseClient.from('school_data').select('*');
-                if (data && data.length > 0) {
-                    data.forEach(item => {
-                        if (item.id === 'duyurular') duyurular = item.content || [];
-                        if (item.id === 'odevler') odevler = item.content || [];
-                        if (item.id === 'yemek') yemekData = item.content || { text: "Menü eklenmedi.", file: null };
-                    });
-                }
-                duyurular.sort((a,b) => b.id - a.id);
-                odevler.sort((a,b) => b.id - a.id);
-
-                duyurulariGetir();
-                odevleriGetir();
-                yemekMenusuGetir();
-            } catch (e) { 
-                console.log('Bulut hatası:', e);
-                duyurulariGetir(); odevleriGetir();
-            }
-        }
-
-        async function bulutaKaydet(id, content) {
-            if (supabaseClient) {
-                await supabaseClient.from('school_data').upsert({ id: id, content: content });
-            }
-        }
-
-        function duyurulariGetir() {
-            const container = document.getElementById('duyuru-container');
-            if(!container) return;
-            
-            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "ALL";
-            let filtrelenmis = duyurular.filter(d => {
-                if(!d.targetClasses || d.targetClasses.includes("ALL")) return true;
-                return d.targetClasses.includes(secilenSinif);
-            });
-
-            if(filtrelenmis.length === 0) {
-                container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz yayınlanmış duyuru yok.</p>";
-                return;
-            }
-            container.innerHTML = "";
-            let totalCount = filtrelenmis.length;
-            filtrelenmis.forEach((d, index) => {
-                let seqNum = totalCount - index; // Artan Sıra Numarası (#1, #2...)
-                let fileHtml = "";
-                if(d.file) {
-                    if(d.file.type.includes("pdf")) {
-                        fileHtml = `<div class="card-attachment"><button onclick="openPdf('${d.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${d.file.name} (PDF'yi Aç)</button></div>`;
-                    } else {
-                        fileHtml = `<div class="card-attachment"><img src="${d.file.data}" alt="Görsel" onclick="openLightbox('${d.file.data}')"></div>`;
-                    }
-                }
-
-                container.innerHTML += `
-                    <div class="card">
-                        <span class="item-number-badge">#${seqNum}</span>
-                        <div class="card-title">${d.baslik}</div>
-                        <div class="card-date"><i class="far fa-clock"></i> ${d.tarih} - <span style="color:var(--primary);">${d.author || 'İdare'}</span></div>
-                        <div class="card-body">${d.icerik}</div>
-                        ${fileHtml}
-                    </div>
-                `;
-            });
-        }
-
-        function odevleriGetir() {
-            const container = document.getElementById('odev-container');
-            if(!container) return;
-            let secilenSinif = (activeSession && activeSession.role === 'student') ? activeSession.detail : "ALL";
-            let filtrelenmis = odevler.filter(o => {
-                if(!o.targetClasses || o.targetClasses.includes("ALL")) return true;
-                return o.targetClasses.includes(secilenSinif);
-            });
-
-            if(filtrelenmis.length === 0) {
-                container.innerHTML = "<p style='color:#888; text-align:center;'>Bu sınıf için ödev bulunmuyor.</p>";
-                return;
-            }
-            container.innerHTML = "";
-            let totalCount = filtrelenmis.length;
-            filtrelenmis.forEach((o, index) => {
-                let seqNum = totalCount - index;
-                let fileHtml = "";
-                if(o.file) {
-                    if(o.file.type.includes("pdf")) {
-                        fileHtml = `<div class="card-attachment"><button onclick="openPdf('${o.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${o.file.name} (PDF'yi Aç)</button></div>`;
-                    } else {
-                        fileHtml = `<div class="card-attachment"><img src="${o.file.data}" alt="Görsel" onclick="openLightbox('${o.file.data}')"></div>`;
-                    }
-                }
-
-                container.innerHTML += `
-                    <div class="todo-item ${o.done ? 'completed' : ''}">
-                        <span class="item-number-badge" style="top:5px; right:5px;">#${seqNum}</span>
-                        <input type="checkbox" ${o.done ? 'checked' : ''} onchange="odevDurumDegis(${o.id})">
-                        <div class="todo-text" style="width:100%;">
-                            <strong>[${o.ders}]</strong> ${o.icerik}
-                            <div style="font-size:0.75rem; color:#888;">Öğretmen: ${o.author || 'Branş Öğretmeni'} | Son Teslim: ${o.tarih}</div>
-                            ${fileHtml}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function yemekMenusuGetir() {
-            let yElem = document.getElementById('yemek-container');
-            let fElem = document.getElementById('yemek-file-container');
-            if(!yElem) return;
-            
-            yElem.innerText = typeof yemekData === 'string' ? yemekData : (yemekData.text || "Menü eklenmedi.");
-            fElem.innerHTML = "";
-
-            if(yemekData && yemekData.file) {
-                if(yemekData.file.type.includes("pdf")) {
-                    fElem.innerHTML = `<div class="card-attachment"><button onclick="openPdf('${yemekData.file.data}')" class="pdf-link"><i class="fas fa-file-pdf"></i> ${yemekData.file.name} (Haftalık Yemek Menüsü PDF)</button></div>`;
-                } else {
-                    fElem.innerHTML = `<div class="card-attachment"><img src="${yemekData.file.data}" alt="Yemek Menüsü" onclick="openLightbox('${yemekData.file.data}')"></div>`;
-                }
-            }
-        }
-
-        async function ogretmenPaylasimYap() {
-            let postType = document.getElementById('ogretmen-post-type').value;
-            let ders = document.getElementById('ogretmen-ders').value.trim();
-            let tarihRaw = document.getElementById('ogretmen-tarih').value;
-            let icerik = document.getElementById('ogretmen-icerik').value.trim();
-            let fileInput = document.getElementById('ogretmen-file');
-
-            let selectedClasses = [];
-            let allCb = document.getElementById('cb-all-ogretmen');
-            if(allCb && allCb.checked) {
-                selectedClasses = ["ALL"];
-            } else {
-                document.querySelectorAll('.cls-sub-ogretmen:checked').forEach(cb => selectedClasses.push(cb.value));
-            }
-            if(selectedClasses.length === 0) selectedClasses = ["ALL"];
-
-            if(!ders || !icerik) return alert("Lütfen ders/konu adını ve açıklamayı yazın.");
-
-            let tarihStr = tarihRaw ? new Date(tarihRaw).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR');
-
-            let fileObj = null;
-            if(fileInput.files.length > 0) {
-                fileObj = await getBase64(fileInput.files[0]);
-            }
-
-            let newItem = {
-                id: Date.now(),
-                ders: ders,
-                tarih: tarihStr,
-                icerik: icerik,
-                author: activeSession ? `${activeSession.name} (${activeSession.detail})` : "Öğretmen",
-                targetClasses: selectedClasses,
-                file: fileObj,
-                done: false
-            };
-
-            if(postType === 'odev') {
-                odevler.unshift(newItem);
-                await bulutaKaydet('odevler', odevler);
-                alert("Ödev yayınlandı!");
-            } else {
-                newItem.baslik = `[${ders}] Duyurusu`;
-                duyurular.unshift(newItem);
-                await bulutaKaydet('duyurular', duyurular);
-                alert("Duyuru yayınlandı!");
-            }
-
-            document.getElementById('ogretmen-ders').value = "";
-            document.getElementById('ogretmen-icerik').value = "";
-            fileInput.value = "";
-
-            tabDegistir('panel-ogretmen-liste');
-            ogretmenPostlariniGetir();
-        }
-
-        function ogretmenPostlariniGetir() {
-            const container = document.getElementById('ogretmen-postlar-container');
-            if(!container) return;
-            let myName = activeSession ? activeSession.name : "";
-            let myPosts = odevler.filter(o => o.author && o.author.includes(myName))
-                .concat(duyurular.filter(d => d.author && d.author.includes(myName)));
-
-            myPosts.sort((a,b) => b.id - a.id);
-
-            if(myPosts.length === 0) {
-                container.innerHTML = "<p style='text-align:center; color:#888;'>Henüz ödev veya duyuru paylaşmadınız.</p>";
-                return;
-            }
-            container.innerHTML = "";
-            let totalCount = myPosts.length;
-            myPosts.forEach((p, index) => {
-                let seqNum = totalCount - index;
-                container.innerHTML += `
-                    <div class="card">
-                        <span class="item-number-badge">#${seqNum}</span>
-                        <button class="delete-post-btn" title="Sil" onclick="postSil(${p.id})"><i class="fas fa-trash"></i></button>
-                        <div class="card-title">${p.ders || p.baslik}</div>
-                        <div class="card-date">Tarih: ${p.tarih} | Hedef: ${p.targetClasses ? p.targetClasses.join(', ') : 'Tüm Okul'}</div>
-                        <div class="card-body">${p.icerik}</div>
-                    </div>
-                `;
-            });
-        }
-
-        async function idareDuyuruYayinla() {
-            let b = document.getElementById('idare-baslik').value.trim();
-            let i = document.getElementById('idare-icerik').value.trim();
-            let fileInput = document.getElementById('idare-file');
-
-            let selectedClasses = [];
-            let allCb = document.getElementById('cb-all-idare');
-            if(allCb && allCb.checked) {
-                selectedClasses = ["ALL"];
-            } else {
-                document.querySelectorAll('.cls-sub-idare:checked').forEach(cb => selectedClasses.push(cb.value));
-            }
-            if(selectedClasses.length === 0) selectedClasses = ["ALL"];
-
-            if(!b || !i) return alert("Başlık ve içeriği yazın.");
-
-            let fileObj = null;
-            if(fileInput.files.length > 0) {
-                fileObj = await getBase64(fileInput.files[0]);
-            }
-
-            let newItem = {
-                id: Date.now(),
-                baslik: b,
-                tarih: new Date().toLocaleDateString('tr-TR'),
-                icerik: i,
-                author: activeSession ? `${activeSession.detail} - ${activeSession.name}` : "İdare",
-                targetClasses: selectedClasses,
-                file: fileObj
-            };
-
-            duyurular.unshift(newItem);
-            await bulutaKaydet('duyurular', duyurular);
-            alert("İdare duyurusu yayınlandı!");
-            document.getElementById('idare-baslik').value = "";
-            document.getElementById('idare-icerik').value = "";
-            fileInput.value = "";
-
-            tabDegistir('panel-idare-liste');
-            idarePostlariniGetir('my');
-        }
-
-        function idarePostlariniGetir(mode = 'my') {
-            const container = document.getElementById('idare-postlar-container');
-            if(!container) return;
-            container.innerHTML = "";
-
-            let targetPosts = [];
-            if(mode === 'all') {
-                // SÜPER İDARECİ MODU: Tüm Öğretmen ve İdare içeriklerini göster
-                targetPosts = duyurular.concat(odevler);
-            } else {
-                let myName = activeSession ? activeSession.name : "";
-                targetPosts = duyurular.filter(d => d.author && d.author.includes(myName));
-            }
-
-            targetPosts.sort((a,b) => b.id - a.id);
-
-            if(targetPosts.length === 0) {
-                container.innerHTML = "<p style='text-align:center; color:#888;'>Gösterilebilecek içerik bulunamadı.</p>";
-                return;
-            }
-
-            let totalCount = targetPosts.length;
-            targetPosts.forEach((d, index) => {
-                let seqNum = totalCount - index;
-                container.innerHTML += `
-                    <div class="card">
-                        <span class="item-number-badge">#${seqNum}</span>
-                        <button class="delete-post-btn" title="Sil" onclick="postSil(${d.id})"><i class="fas fa-trash"></i></button>
-                        <div class="card-title">${d.baslik || d.ders}</div>
-                        <div class="card-date">${d.tarih} | Yazan: ${d.author || 'İdare'} | Hedef: ${d.targetClasses ? d.targetClasses.join(', ') : 'Tüm Okul'}</div>
-                        <div class="card-body">${d.icerik}</div>
-                    </div>
-                `;
-            });
-        }
-
-        async function postSil(id) {
-            if(!confirm("Bu paylaşımı silmek istediğinize emin misiniz?")) return;
-            
-            let odevIdx = odevler.findIndex(o => o.id === id);
-            if(odevIdx !== -1) {
-                odevler.splice(odevIdx, 1);
-                await bulutaKaydet('odevler', odevler);
-            } else {
-                let duyuruIdx = duyurular.findIndex(d => d.id === id);
-                if(duyuruIdx !== -1) {
-                    duyurular.splice(duyuruIdx, 1);
-                    await bulutaKaydet('duyurular', duyurular);
-                }
-            }
-
-            alert("Paylaşım silindi.");
-            if(activeSession && activeSession.role === 'teacher') ogretmenPostlariniGetir();
-            if(activeSession && activeSession.role === 'admin') idarePostlariniGetir('my');
-            duyurulariGetir();
-            odevleriGetir();
-        }
-
-        function odevDurumDegis(id) {
-            let item = odevler.find(o => o.id === id);
-            if(item) item.done = !item.done;
-            odevleriGetir();
-        }
-
-        async function yemekGuncelle() {
-            let textVal = document.getElementById('idare-yemek').value.trim();
-            let fileInput = document.getElementById('idare-yemek-file');
-
-            let fileObj = null;
-            if(fileInput.files.length > 0) {
-                fileObj = await getBase64(fileInput.files[0]);
-            } else if(typeof yemekData === 'object' && yemekData.file) {
-                fileObj = yemekData.file;
-            }
-
-            yemekData = {
-                text: textVal || "Haftalık Yemek Menüsü",
-                file: fileObj
-            };
-
-            await bulutaKaydet('yemek', yemekData);
-            yemekMenusuGetir();
-            alert("Haftalık Yemek Menüsü güncellendi!");
-        }
-
-        function notEkle() {
-            let ad = document.getElementById('ders-adi').value;
-            let y1 = parseFloat(document.getElementById('yazili-1').value) || 0;
-            let y2 = parseFloat(document.getElementById('yazili-2').value) || 0;
-            let perf = parseFloat(document.getElementById('performans').value) || 0;
-            if(!ad) return alert("Ders adını girin.");
-
-            let ort = ((y1 + y2 + perf) / 3).toFixed(2);
-            dersNotlari.push({ id: Date.now(), ad, y1, y2, perf, ort });
-            localStorage.setItem('kk_notlar', JSON.stringify(dersNotlari));
-            notlariListele();
-        }
-
-        function notSil(id) {
-            dersNotlari = dersNotlari.filter(n => n.id !== id);
-            localStorage.setItem('kk_notlar', JSON.stringify(dersNotlari));
-            notlariListele();
-        }
-
-        function notlariListele() {
-            const tbody = document.getElementById('not-tablosu');
-            if(!tbody) return;
-            tbody.innerHTML = "";
-            let toplam = 0;
-            dersNotlari.forEach(n => {
-                toplam += parseFloat(n.ort);
-                tbody.innerHTML += `<tr><td><b>${n.ad}</b></td><td>${n.y1}</td><td>${n.y2}</td><td>${n.perf}</td><td><b>${n.ort}</b></td><td><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="notSil(${n.id})"></i></td></tr>`;
-            });
-            let genelOrt = dersNotlari.length > 0 ? (toplam / dersNotlari.length).toFixed(2) : "0.00";
-            document.getElementById('belge-durumu').innerText = `Genel Ortalama: ${genelOrt}`;
-        }
-
-        let timer, timeLeft = 1500, isRunning = false;
-        function updateTimerDisplay() {
-            let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-            document.getElementById('timer-display').innerText = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-        }
-        function startTimer() {
-            if(isRunning) return; isRunning = true;
-            timer = setInterval(() => {
-                if(timeLeft > 0) { timeLeft--; updateTimerDisplay(); }
-                else { clearInterval(timer); alert("Süre Doldu!"); isRunning = false; }
-            }, 1000);
-        }
-        function pauseTimer() { clearInterval(timer); isRunning = false; }
-        function resetTimer() { clearInterval(timer); isRunning = false; timeLeft = 1500; updateTimerDisplay(); }
-
-        window.onload = function() {
-            sessionUygula();
-            bulutVerileriniYukle();
-            notlariListele();
-        };
-    </script>
+    <span class="v-badge">v1.07</span>
+    <div class="quick-logins" id="quick-logins">
+      <button onclick="ogrenciIcinGate()">Öğrenci</button>
+      <button onclick="modalAc('modal-ogretmen')">Öğretmen</button>
+      <button onclick="modalAc('modal-idare')">İdare</button>
+    </div>
+    <button class="logout-btn hidden" id="logout-btn" title="Çıkış Yap" onclick="cikYap()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+  </header>
+
+  <div class="profile-strip" id="profile-strip"></div>
+
+  <main id="main">
+
+    <!-- ÖĞRENCİ: DUYURULAR -->
+    <section data-tab="ogr-duyurular">
+      <div class="section-title"><span class="bar"></span><h2>Okul Duyuruları</h2><span class="hint" id="hint-duyuru"></span></div>
+      <div class="post-list" id="ogr-duyuru-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- ÖĞRENCİ: ÖDEVLER -->
+    <section data-tab="ogr-odevler" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Akşam Ödev Takibi</h2><span class="hint" id="hint-odev"></span></div>
+      <div class="post-list" id="ogr-odev-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- ÖĞRENCİ: MENÜ -->
+    <section data-tab="ogr-menu" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Günün Yemek Menüsü</h2></div>
+      <div id="ogr-menu-box"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- ÖĞRENCİ: NOTLARIM -->
+    <section data-tab="ogr-notlar" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Kişisel Not Takibi</h2></div>
+      <div class="kart altin-top">
+        <label class="f-label" for="n-ders">Ders Adı</label>
+        <input class="f-input" id="n-ders" maxlength="40" placeholder="örn. Matematik">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div><label class="f-label" for="n-y1">Y1</label><input class="f-input" id="n-y1" type="number" min="0" max="100"></div>
+          <div><label class="f-label" for="n-y2">Y2</label><input class="f-input" id="n-y2" type="number" min="0" max="100"></div>
+          <div><label class="f-label" for="n-perf">Perf.</label><input class="f-input" id="n-perf" type="number" min="0" max="100"></div>
+        </div>
+        <label class="f-label">&nbsp;</label>
+        <button class="btn btn-bordo" style="width:100%" onclick="notEkle()"><i class="fa-solid fa-calculator"></i> Hesapla &amp; Kaydet</button>
+      </div>
+      <div class="kart">
+        <table class="notlar">
+          <thead><tr><th>Ders</th><th>Y1</th><th>Y2</th><th>Perf</th><th>Ort.</th><th></th></tr></thead>
+          <tbody id="not-tbody"></tbody>
+        </table>
+        <p style="margin-top:12px;font-size:.86rem">Genel Ortalama: <strong id="genel-ort" class="ort-cell">0.00</strong></p>
+      </div>
+    </section>
+
+    <!-- ÖĞRENCİ: POMODORO -->
+    <section data-tab="ogr-pomodoro" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Pomodoro Çalışma Sayacı</h2></div>
+      <div class="kart altin-top" style="text-align:center">
+        <div class="pomo-ring" id="pomo-ring">
+          <div class="pomo-time" id="pomo-time">25:00</div>
+          <div class="pomo-label">Odaklanma Süresi</div>
+        </div>
+        <div class="pomo-btns">
+          <button class="btn btn-altin" id="pomo-start" onclick="pomoStart()"><i class="fa-solid fa-play"></i> Başlat</button>
+          <button class="btn btn-ghost" onclick="pomoPause()"><i class="fa-solid fa-pause"></i> Durdur</button>
+          <button class="btn btn-bordo" onclick="pomoReset()"><i class="fa-solid fa-rotate-left"></i> Sıfırla</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÖĞRETMEN: EKLE -->
+    <section data-tab="ekle" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Ödev veya Duyuru Ekle</h2></div>
+      <div class="kart">
+        <label class="f-label">1. Paylaşım Türü</label>
+        <div class="radio-split">
+          <label><input type="radio" name="t-tur" value="odev" checked><span><i class="fa-solid fa-book"></i> Ödev Ver</span></label>
+          <label><input type="radio" name="t-tur" value="duyuru"><span><i class="fa-solid fa-bullhorn"></i> Duyuru Yap</span></label>
+        </div>
+        <label class="f-label" for="t-konu">Ders / Konu Adı</label>
+        <input class="f-input" id="t-konu" maxlength="80" placeholder="örn. Fizik — Kuvvet ve Hareket">
+        <label class="f-label" for="t-metin">Açıklama</label>
+        <textarea class="f-input" id="t-metin" maxlength="1200" placeholder="Detayları yazınız…"></textarea>
+        <label class="f-label" for="t-tarih">Son Teslim / Geçerlilik Tarihi</label>
+        <input class="f-input" id="t-tarih" type="date">
+        <label class="f-label">2. Hedef Sınıf / Şubeler</label>
+        <div class="check-grid" id="t-classes"></div>
+        <label class="f-label">3. Resim veya PDF Ekleyin (Opsiyonel)</label>
+        <div class="file-zone"><input type="file" id="t-file" accept="image/*,application/pdf"><div id="t-file-prev"></div></div>
+        <label class="f-label">&nbsp;</label>
+        <button class="btn btn-altin" style="width:100%" id="t-yayinla" onclick="ogretmenYayinla()"><i class="fa-solid fa-tower-broadcast"></i> Canlıya Yayınla</button>
+      </div>
+    </section>
+
+    <!-- ÖĞRETMEN: YAYINLADIKLARIM -->
+    <section data-tab="yayinlarim" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Yayınladığım Ödev &amp; Duyurular</h2></div>
+      <div class="post-list" id="yayin-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- İDARE: EKLE -->
+    <section data-tab="idare-ekle" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>İdare Duyuru &amp; Menü Ekle</h2></div>
+      <div class="kart">
+        <h3 style="color:var(--bordo-koyu);margin-bottom:4px">1. Okul Duyurusu Yayınla</h3>
+        <label class="f-label" for="a-baslik">Duyuru Başlığı</label>
+        <input class="f-input" id="a-baslik" maxlength="80" placeholder="örn. Cumhuriyet Bayramı Töreni">
+        <label class="f-label" for="a-metin">Duyuru Metni</label>
+        <textarea class="f-input" id="a-metin" maxlength="1200" placeholder="Detayları yazınız…"></textarea>
+        <label class="f-label">Hedef Sınıflar</label>
+        <div class="check-grid" id="a-classes"></div>
+        <label class="f-label">Görsel veya PDF Dosyası</label>
+        <div class="file-zone"><input type="file" id="a-file" accept="image/*,application/pdf"><div id="a-file-prev"></div></div>
+        <label class="f-label">&nbsp;</label>
+        <button class="btn btn-altin" style="width:100%" id="a-yayinla" onclick="idareDuyuruYayinla()"><i class="fa-solid fa-bullhorn"></i> Duyuruyu Yayınla</button>
+      </div>
+      <div class="kart altin-top">
+        <h3 style="color:var(--bordo-koyu);margin-bottom:4px">2. Günün Yemek Menüsü</h3>
+        <label class="f-label" for="m-metin">Menü Metni</label>
+        <textarea class="f-input" id="m-metin" maxlength="800" placeholder="Mercimek Çorbası&#10;Izgara Köfte&#10;Pilav&#10;Ayran"></textarea>
+        <label class="f-label">Menü Listesi Görseli / PDF (Opsiyonel)</label>
+        <div class="file-zone"><input type="file" id="m-file" accept="image/*,application/pdf"><div id="m-file-prev"></div></div>
+        <label class="f-label">&nbsp;</label>
+        <button class="btn btn-bordo" style="width:100%" id="m-yayinla" onclick="menuGuncelle()"><i class="fa-solid fa-utensils"></i> Menüyü Güncelle</button>
+      </div>
+    </section>
+
+    <!-- İDARE: İÇERİK YÖNETİMİ -->
+    <section data-tab="yonetim" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>İçerik Yönetimi</h2></div>
+      <button class="btn btn-ghost super-toggle" id="super-btn" onclick="superToggle()" style="margin-bottom:14px">
+        <i class="fa-solid fa-shield-halved"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)
+      </button>
+      <div class="post-list" id="yonetim-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- ORTAK: ÖĞRENCİ AKIŞI (Öğretmen & İdare) -->
+    <section data-tab="genel-akis" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Öğrenci Akışı</h2><span class="hint">Yeniden eskiye</span></div>
+      <div class="post-list" id="akis-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+  </main>
+</div>
+
+<nav class="bottom-nav hidden" id="bottom-nav"></nav>
+<div id="toast-wrap"></div>
+<div class="lightbox hidden" id="lightbox" onclick="lightboxKapat()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img id="lightbox-img" alt="Büyütülmüş görsel"></div>
+
+<script>
+/* ══════════════════ SABİTLER ══════════════════ */
+const CURRENT_VERSION = '1.07';
+const SUPABASE_URL      = '';   // ← ör: https://xyz.supabase.co
+const SUPABASE_ANON_KEY = '';   // ← anon public key
+const OGRETMEN_SIFRE = 'kandilli_ogretmen';
+const IDARE_SIFRE    = 'kandilli_idare';
+const ALL_CLASSES = ['9-A','9-B','10-A','10-B','11-A','11-B','12-A','12-B'];
+const ROLE_LABEL = {ogrenci:'Öğrenci', ogretmen:'Öğretmen', idare:'İdare'};
+
+const NAVS = {
+  ogrenci:[
+    {id:'ogr-duyurular', icon:'fa-bullhorn',      label:'Duyurular'},
+    {id:'ogr-odevler',   icon:'fa-book-open',     label:'Ödevler'},
+    {id:'ogr-menu',      icon:'fa-utensils',      label:'Program/Menü'},
+    {id:'ogr-notlar',    icon:'fa-chart-simple',  label:'Notlarım'},
+    {id:'ogr-pomodoro',  icon:'fa-stopwatch',     label:'Pomodoro'}
+  ],
+  ogretmen:[
+    {id:'ekle',        icon:'fa-circle-plus',  label:'Ödev/Duyuru Ekle'},
+    {id:'yayinlarim',  icon:'fa-list-check',   label:'Yayınladıklarım'},
+    {id:'genel-akis',  icon:'fa-users',        label:'Öğrenci Akışı'}
+  ],
+  idare:[
+    {id:'idare-ekle',  icon:'fa-circle-plus',  label:'Duyuru/Menü Ekle'},
+    {id:'yonetim',     icon:'fa-shield-halved',label:'İçerik Yönetimi'},
+    {id:'genel-akis',  icon:'fa-users',        label:'Öğrenci Akışı'}
+  ]
+};
+
+/* ══════════════════ DURUM ══════════════════ */
+let sb = null;
+const state = { posts:[], session:null, superMode:false, aktifTab:null, notlar:[] };
+const fileState = {};
+
+/* ══════════════════ YARDIMCILAR ══════════════════ */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTarih = d => d ? new Date(d.length===10 ? d+'T00:00:00' : d).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
+const SESSION_KEY = 'kkl_session_v'+CURRENT_VERSION;
+const NOTLAR_KEY  = 'kkl_notlar_v'+CURRENT_VERSION;
+
+/* Sürüm kontrolü: eski sürüm verilerini temizle */
+['kkl_session','kkl_notlar'].forEach(prefix=>{
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith(prefix+'_v') && k !== prefix+'_v'+CURRENT_VERSION) localStorage.removeItem(k);
+  });
+});
+
+function toast(msg){
+  const w = $('#toast-wrap');
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 3200);
+}
+function modalAc(id){ $('#'+id).classList.remove('hidden'); }
+function modalKapat(id){ $('#'+id).classList.add('hidden'); }
+function ogrenciIcinGate(){ toast('Öğrenci profili zaten bu cihazda kilitli. Değiştirmek için profil şeridindeki "Sıfırla" bağlantısını kullanın.'); }
+
+/* ══════════════════ SUPABASE ══════════════════ */
+function initSupabase(){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return false;
+  try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
+  catch(e){ return false; }
+}
+function durumGuncelle(){
+  const el = $('#durum-dot'); if(!el) return;
+  if(sb){ el.textContent='☁ Bulut'; el.className='status-dot status-cloud'; }
+  else  { el.textContent='● Yerel Mod'; el.className='status-dot status-local'; }
+}
+function yerelYedekle(){ try{ localStorage.setItem('kkl_posts_v'+CURRENT_VERSION, JSON.stringify(state.posts)); }catch(e){} }
+function yerelYukle(){ try{ return JSON.parse(localStorage.getItem('kkl_posts_v'+CURRENT_VERSION)) || []; }catch(e){ return []; } }
+
+async function fetchPosts(){
+  if(sb){
+    const {data, error} = await sb.from('posts').select('*').order('created_at',{ascending:false});
+    if(!error && data){ state.posts = data; yerelYedekle(); durumGuncelle(); return; }
+  }
+  if(state.posts.length===0) state.posts = yerelYukle();
+  durumGuncelle();
+}
+
+async function insertPost(p){
+  if(sb){
+    const {error} = await sb.from('posts').insert(p);
+    if(!error){ await fetchPosts(); renderAll(); return true; }
+    toast('Bulut hatası — gönderi yerel moda kaydedildi.');
+  }
+  p.id = 'lcl-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+  p.created_at = new Date().toISOString();
+  state.posts.unshift(p); yerelYedekle(); renderAll();
+  return true;
+}
+
+async function deletePost(id){
+  const num = orderMap().get(id);
+  if(!confirm('#'+num+' numaralı paylaşım kalıcı olarak silinecek. Emin misiniz?')) return;
+  if(sb && !String(id).startsWith('lcl-')){
+    const {error} = await sb.from('posts').delete().eq('id', id);
+    if(!error){ await fetchPosts(); renderAll(); toast('Paylaşım silindi.'); return; }
+    toast('Silme hatası, tekrar deneyin.'); return;
+  }
+  state.posts = state.posts.filter(p=>p.id!==id); yerelYedekle(); renderAll(); toast('Paylaşım silindi.');
+}
+
+function initRealtime(){
+  if(!sb) return;
+  sb.channel('posts_changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'posts'}, ()=>{ fetchPosts().then(renderAll); })
+    .subscribe();
+}
+
+async function uploadToStorage(file){
+  if(!sb) return null;
+  try{
+    const path = Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const {error} = await sb.storage.from('media').upload(path, file, {upsert:true, contentType:file.type});
+    if(error) return null;
+    return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+  }catch(e){ return null; }
+}
+
+/* ══════════════════ OTURUM ══════════════════ */
+function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; } }
+
+function ogrenciGiris(){
+  const ad = $('#g-ad').value.trim();
+  if(ad.length<2){ toast('Lütfen adını veya lakabını yaz.'); return; }
+  saveSession({role:'ogrenci', name:ad, sinif:$('#g-sinif').value});
+  modalKapat('modal-idare'); modalKapat('modal-ogretmen');
+  boot(); toast('Hoş geldin '+ad+'! Profilin bu cihaza kilitlendi. 🎓');
+}
+function ogretmenGiris(){
+  if($('#o-sifre').value !== OGRETMEN_SIFRE){ toast('Hatalı öğretmen şifresi.'); return; }
+  const ad = $('#o-ad').value.trim();
+  if(ad.length<3){ toast('Lütfen ad-soyad giriniz.'); return; }
+  saveSession({role:'ogretmen', name:ad, brans:$('#o-brans').value});
+  modalKapat('modal-ogretmen'); boot(); toast('Hoş geldiniz '+ad+' Öğretmenim. 📚');
+}
+function idareGiris(){
+  if($('#i-sifre').value !== IDARE_SIFRE){ toast('Hatalı idare şifresi.'); return; }
+  const ad = $('#i-ad').value.trim();
+  if(ad.length<3){ toast('Lütfen ad-soyad giriniz.'); return; }
+  saveSession({role:'idare', name:ad, unvan:$('#i-unvan').value});
+  modalKapat('modal-idare'); boot(); toast('Hoş geldiniz '+ad+'. 🏛');
+}
+function cikYap(){
+  if(!confirm('Oturum kapatılsın mı?')) return;
+  localStorage.removeItem(SESSION_KEY); location.reload();
+}
+function profilSifirla(){
+  if(!confirm('Profili sıfırlamak istediğine emin misin? Bu işlem cihazındaki TÜM oturum ve not verilerini silecek.')) return;
+  if(!confirm('Son kez soruyoruz: tüm veriler silinecek. Devam edilsin mi?')) return;
+  localStorage.removeItem(SESSION_KEY); localStorage.removeItem(NOTLAR_KEY); location.reload();
+}
+
+/* ══════════════════ NAVİGASYON ══════════════════ */
+function buildNav(){
+  const nav = $('#bottom-nav');
+  nav.innerHTML = NAVS[state.session.role].map(t =>
+    `<button class="nav-item" data-tab="${t.id}" onclick="tabSec('${t.id}')"><i class="fa-solid ${t.icon}"></i><span>${t.label}</span></button>`
+  ).join('');
+  tabSec(NAVS[state.session.role][0].id);
+}
+function tabSec(id){
+  state.aktifTab = id;
+  $$('main > section').forEach(s => s.classList.toggle('hidden', s.dataset.tab !== id));
+  $$('.nav-item').forEach(b => b.classList.toggle('aktif', b.dataset.tab === id));
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderAll();
+}
+
+function profilSeridi(){
+  const s = state.session;
+  let detay = s.role==='ogrenci' ? s.sinif : (s.role==='ogretmen' ? s.brans : s.unvan);
+  let sag = s.role==='ogrenci'
+    ? `<button class="mini-link" onclick="profilSifirla()">Profil Sıfırla</button>`
+    : ``;
+  $('#profile-strip').innerHTML =
+    `<i class="fa-solid fa-id-badge" style="color:var(--altin)"></i>
+     <span class="who">${esc(s.name)}</span>
+     <span class="chip chip-gri">${ROLE_LABEL[s.role]} · ${esc(detay)}</span>
+     <span class="status-dot" id="durum-dot"></span>${sag}`;
+  $('#quick-logins').classList.toggle('hidden', true);
+  $('#logout-btn').classList.toggle('hidden', s.role==='ogrenci');
+  durumGuncelle();
+}
+
+/* ══════════════════ VERİ HAZIRLAMA ══════════════════ */
+function siraliEski(){ return [...state.posts].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at)); }
+function orderMap(){ const m=new Map(); siraliEski().forEach((p,i)=>m.set(p.id, i+1)); return m; }
+const enYeni = arr => [...arr].sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+function ogrenciGorur(p){ return p.all_school || (p.target_classes||[]).includes(state.session.sinif); }
+const kendiPostlarim = () => state.posts.filter(p => p.author_name===state.session.name && p.author_role===state.session.role);
+
+function deadlineChip(p){
+  if(p.type!=='odev' || !p.deadline) return '';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d=new Date(p.deadline+'T00:00:00');
+  const diff=Math.round((d-today)/86400000);
+  if(diff<0)  return `<span class="chip chip-kirmizi"><i class="fa-solid fa-hourglass-end"></i> Süresi doldu</span>`;
+  if(diff===0)return `<span class="chip chip-altin"><i class="fa-solid fa-fire"></i> Bugün son gün!</span>`;
+  return `<span class="chip chip-yesil"><i class="fa-solid fa-hourglass-half"></i> ${diff} gün kaldı</span>`;
+}
+
+function mediaHTML(p){
+  if(!p.media_kind) return '';
+  const src = p.media_url || p.media_data;
+  if(!src) return '';
+  if(p.media_kind==='image')
+    return `<img class="post-img" src="${esc(src)}" loading="lazy" alt="Paylaşım görseli" onclick="openLightbox('${esc(src)}')">`;
+  return `<button class="btn btn-ghost" style="margin-top:12px;padding:8px 14px;font-size:.8rem" onclick="openPdf('${p.id}')"><i class="fa-solid fa-file-pdf"></i> PDF Görüntüle</button>`;
+}
+
+function postCard(p, {canDelete=false}={}){
+  const num = orderMap().get(p.id) || '•';
+  const tip = p.type==='odev'   ? `<span class="chip chip-bordo"><i class="fa-solid fa-book"></i> Ödev</span>`
+            : p.type==='yemek'  ? `<span class="chip chip-menu"><i class="fa-solid fa-utensils"></i> Menü</span>`
+            :                     `<span class="chip chip-altin"><i class="fa-solid fa-bullhorn"></i> Duyuru</span>`;
+  const classes = p.all_school ? ['TÜM OKUL'] : (p.target_classes||[]);
+  return `
+  <article class="post-card">
+    <span class="order-badge">#${num}</span>
+    <div class="post-head">${tip}${deadlineChip(p)}<h3>${esc(p.title||'')}</h3></div>
+    <div class="post-meta">
+      <span><i class="fa-solid fa-user-pen"></i> ${esc(p.author_name)}${p.author_role==='ogretmen'?' · '+esc(p.author_role):''}${p.author_role==='idare'?' · İdare':''}</span>
+      <span><i class="fa-regular fa-calendar"></i> ${fmtTarih(p.created_at)}</span>
+      ${p.deadline?`<span><i class="fa-solid fa-flag-checkered"></i> ${fmtTarih(p.deadline)}</span>`:''}
+    </div>
+    ${p.body?`<div class="post-body">${esc(p.body)}</div>`:''}
+    ${mediaHTML(p)}
+    <div class="post-foot">
+      <div class="class-tags">${classes.map(c=>`<span class="class-tag">${esc(c)}</span>`).join('')}</div>
+      ${canDelete?`<button class="del-btn" onclick="deletePost('${p.id}')"><i class="fa-solid fa-trash-can"></i> Sil</button>`:''}
+    </div>
+  </article>`;
+}
+
+function bosMesaj(ikon, metin){ return `<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`; }
+
+/* ══════════════════ RENDER ══════════════════ */
+function renderAll(){
+  const r = state.session?.role; if(!r) return;
+  if(r==='ogrenci'){
+    const d = enYeni(state.posts.filter(p=>p.type==='duyuru' && ogrenciGorur(p)));
+    const o = enYeni(state.posts.filter(p=>p.type==='odev'   && ogrenciGorur(p)));
+    $('#ogr-duyuru-list').innerHTML = d.length? d.map(p=>postCard(p)).join('') : bosMesaj('fa-bullhorn-slash','Henüz yayınlanmış duyuru yok.');
+    $('#ogr-odev-list').innerHTML   = o.length? o.map(p=>postCard(p)).join('') : bosMesaj('fa-mug-hot','Sınıfınıza özel ödev yok. Keyfini çıkarın! ☕');
+    $('#hint-duyuru').textContent = d.length? d.length+' duyuru':'';
+    $('#hint-odev').textContent   = o.length? o.length+' ödev':'';
+    renderMenu(); renderNotlar();
+  }
+  if(r==='ogretmen'){
+    const kendi = enYeni(kendiPostlarim());
+    $('#yayin-list').innerHTML = kendi.length? kendi.map(p=>postCard(p,{canDelete:true})).join('') : bosMesaj('fa-inbox','Henüz paylaşım yayınlamadınız.');
+    const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
+    $('#akis-list').innerHTML = akis.length? akis.map(p=>postCard(p)).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+  }
+  if(r==='idare'){
+    const liste = state.superMode ? enYeni([...state.posts]) : enYeni(kendiPostlarim());
+    $('#yonetim-list').innerHTML = liste.length? liste.map(p=>postCard(p,{canDelete:true})).join('')
+      : bosMesaj('fa-box-open', state.superMode?'Okulda hiç içerik yok.':'Henüz paylaşımınız yok. Süper İdare ile tümünü görüntüleyebilirsiniz.');
+    const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
+    $('#akis-list').innerHTML = akis.length? akis.map(p=>postCard(p)).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+  }
+}
+
+function renderMenu(){
+  const m = enYeni(state.posts.filter(p=>p.type==='yemek'))[0];
+  $('#ogr-menu-box').innerHTML = m
+    ? `<div class="kart altin-top">${postCard(m)}</div>`
+    : bosMesaj('fa-utensils','Menü eklenmedi.');
+}
+function superToggle(){
+  state.superMode = !state.superMode;
+  $('#super-btn').classList.toggle('aktif', state.superMode);
+  $('#super-btn').innerHTML = state.superMode
+    ? '<i class="fa-solid fa-shield-halved"></i> Süper İdare AKTİF — Tüm okul içerikleri görünüyor'
+    : '<i class="fa-solid fa-shield-halved"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)';
+  renderAll();
+}
+
+/* ══════════════════ ŞUBE SEÇİM MANTIĞI ══════════════════ */
+function buildClassGrid(containerId, prefix){
+  $('#'+containerId).innerHTML =
+    `<label class="check-item full"><input type="checkbox" id="${prefix}-all" onchange="tumOkulDegisti('${prefix}')"><span><i class="fa-solid fa-school"></i> Tüm Okul</span></label>`
+    + ALL_CLASSES.map(c=>`<label class="check-item"><input type="checkbox" class="${prefix}-box" value="${c}" onchange="subeDegisti('${prefix}')"><span>${c}</span></label>`).join('');
+}
+function tumOkulDegisti(prefix){
+  const master = $('#'+prefix+'-all').checked;
+  $$('.'+prefix+'-box').forEach(b=>{ b.checked = master; b.disabled = master; });
+}
+function subeDegisti(prefix){
+  const hepsi = $$('.'+prefix+'-box').every(b=>b.checked);
+  const master = $('#'+prefix+'-all');
+  if(hepsi){ master.checked = true; tumOkulDegisti(prefix); }
+}
+function seciliSiniflar(prefix){
+  if($('#'+prefix+'-all').checked) return {all:true, classes:[...ALL_CLASSES]};
+  return {all:false, classes:$$('.'+prefix+'-box:checked').map(b=>b.value)};
+}
+
+/* ══════════════════ DOSYA YÜKLEME ══════════════════ */
+function bindFile(inputId, prevId){
+  const inp = document.getElementById(inputId);
+  inp.addEventListener('change', ()=>{
+    const f = inp.files[0];
+    const prev = $('#'+prevId);
+    if(!f){ delete fileState[inputId]; prev.innerHTML=''; return; }
+    if(f.size > 8*1024*1024){ toast('Dosya en fazla 8 MB olabilir.'); inp.value=''; return; }
+    const kind = f.type==='application/pdf' ? 'pdf' : f.type.startsWith('image/') ? 'image' : null;
+    if(!kind){ toast('Sadece görsel veya PDF yükleyebilirsiniz.'); inp.value=''; return; }
+    const reader = new FileReader();
+    reader.onload = e=>{
+      fileState[inputId] = {kind, dataUrl:e.target.result, file:f};
+      prev.innerHTML = `<span class="file-chip"><i class="fa-solid ${kind==='pdf'?'fa-file-pdf':'fa-image'}"></i> ${esc(f.name)} <button type="button" onclick="fileTemizle('${inputId}','${prevId}')">✕</button></span>`;
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function fileTemizle(inputId, prevId){
+  delete fileState[inputId];
+  document.getElementById(inputId).value='';
+  $('#'+prevId).innerHTML='';
+}
+async function medyaHazirla(inputId){
+  const f = fileState[inputId];
+  if(!f) return {media_kind:null, media_url:null, media_data:null};
+  const url = await uploadToStorage(f.file);       // önce Supabase Storage dene
+  return url
+    ? {media_kind:f.kind, media_url:url, media_data:null}
+    : {media_kind:f.kind, media_url:null, media_data:f.dataUrl}; // yoksa Base64 fallback
+}
+function formTemizle(ids, prefix){
+  ids.forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
+  $$('input[name="'+prefix+'-tur"]').forEach((r,i)=>r.checked = i===0);
+  if($('#'+prefix+'-all')){ $('#'+prefix+'-all').checked=false; tumOkulDegisti(prefix); }
+}
+
+/* ══════════════════ YAYINLAMA ══════════════════ */
+async function ogretmenYayinla(){
+  const tur = document.querySelector('input[name="t-tur"]:checked').value;
+  const konu = $('#t-konu').value.trim(), metin = $('#t-metin').value.trim();
+  if(!konu){ toast('Ders/konu adı gerekli.'); return; }
+  const hedef = seciliSiniflar('t');
+  if(!hedef.all && hedef.classes.length===0){ toast('En az bir şube seçmelisiniz.'); return; }
+  const btn = $('#t-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
+  const medya = await medyaHazirla('t-file');
+  await insertPost({
+    type:tur, title:konu, body:metin, deadline:$('#t-tarih').value||null,
+    all_school:hedef.all, target_classes:hedef.classes, ...medya,
+    author_name:state.session.name, author_role:'ogretmen'
+  });
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-tower-broadcast"></i> Canlıya Yayınla';
+  formTemizle(['t-konu','t-metin','t-tarih'],'t'); fileTemizle('t-file','t-file-prev');
+  toast(tur==='odev'?'Ödev canlıya yayınlandı! ✅':'Duyuru canlıya yayınlandı! ✅');
+  tabSec('yayinlarim');
+}
+async function idareDuyuruYayinla(){
+  const baslik=$('#a-baslik').value.trim(), metin=$('#a-metin').value.trim();
+  if(!baslik && !metin){ toast('Duyuru başlığı veya metni giriniz.'); return; }
+  const hedef = seciliSiniflar('a');
+  if(!hedef.all && hedef.classes.length===0){ toast('Hedef sınıf seçiniz.'); return; }
+  const btn=$('#a-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
+  const medya = await medyaHazirla('a-file');
+  await insertPost({
+    type:'duyuru', title:baslik, body:metin, deadline:null,
+    all_school:hedef.all, target_classes:hedef.classes, ...medya,
+    author_name:state.session.name, author_role:'idare'
+  });
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-bullhorn"></i> Duyuruyu Yayınla';
+  formTemizle(['a-baslik','a-metin'],'a'); fileTemizle('a-file','a-file-prev');
+  toast('İdare duyurusu yayınlandı! 📣');
+}
+async function menuGuncelle(){
+  const metin=$('#m-metin').value.trim();
+  if(!metin && !fileState['m-file']){ toast('Menü metni veya dosyası giriniz.'); return; }
+  const btn=$('#m-yayinla'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Güncelleniyor…';
+  const medya = await medyaHazirla('m-file');
+  await insertPost({
+    type:'yemek', title:'Günün Yemek Menüsü', body:metin, deadline:null,
+    all_school:true, target_classes:[...ALL_CLASSES], ...medya,
+    author_name:state.session.name, author_role:'idare'
+  });
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-utensils"></i> Menüyü Güncelle';
+  $('#m-metin').value=''; fileTemizle('m-file','m-file-prev');
+  toast('Yemek menüsü güncellendi! 🍽');
+}
+
+/* ══════════════════ MEDYA GÖRÜNTÜLEME ══════════════════ */
+function openLightbox(src){ $('#lightbox-img').src = src; $('#lightbox').classList.remove('hidden'); }
+function lightboxKapat(){ $('#lightbox').classList.add('hidden'); }
+
+function dataUrlToBlob(dataUrl){
+  const [meta, b64] = dataUrl.split(',');
+  const mime = (meta.match(/data:(.*?)(;|$)/)||[,'application/pdf'])[1];
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+function openPdf(id){
+  const p = state.posts.find(x=>x.id===id); if(!p) return;
+  if(p.media_url){ window.open(p.media_url,'_blank'); return; }
+  if(p.media_data){ // data: URL yerine Blob URL — Chrome/WebView engeline takılmaz
+    const url = URL.createObjectURL(dataUrlToBlob(p.media_data));
+    window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  }
+}
+
+/* ══════════════════ NOTLAR ══════════════════ */
+function notlariYukle(){ try{ state.notlar = JSON.parse(localStorage.getItem(NOTLAR_KEY))||[]; }catch(e){ state.notlar=[]; } }
+function notlariKaydet(){ try{ localStorage.setItem(NOTLAR_KEY, JSON.stringify(state.notlar)); }catch(e){} }
+function notEkle(){
+  const ders=$('#n-ders').value.trim();
+  if(!ders){ toast('Ders adı yazmalısın.'); return; }
+  const v = id=>{ const n=parseFloat($('#'+id).value); return isNaN(n)?0:Math.min(100,Math.max(0,n)); };
+  state.notlar.push({ders, y1:v('n-y1'), y2:v('n-y2'), perf:v('n-perf')});
+  notlariKaydet(); renderNotlar();
+  $('#n-ders').value=''; ['n-y1','n-y2','n-perf'].forEach(i=>$('#'+i).value='');
+  toast('Not kaydedildi. Başarılar! 🌟');
+}
+function notSil(i){ state.notlar.splice(i,1); notlariKaydet(); renderNotlar(); }
+function renderNotlar(){
+  const tb=$('#not-tbody'); if(!tb) return;
+  tb.innerHTML = state.notlar.length ? state.notlar.map((n,i)=>{
+    const ort=((n.y1+n.y2+n.perf)/3);
+    return `<tr><td style="text-align:left;font-weight:700">${esc(n.ders)}</td><td>${n.y1}</td><td>${n.y2}</td><td>${n.perf}</td><td class="ort-cell">${ort.toFixed(2)}</td><td><button class="del-btn" style="margin:0;padding:4px 8px" onclick="notSil(${i})"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
+  }).join('') : `<tr><td colspan="6" style="color:var(--soluk);padding:16px">Henüz not eklenmedi.</td></tr>`;
+  const genel = state.notlar.length ? state.notlar.reduce((a,n)=>a+(n.y1+n.y2+n.perf)/3,0)/state.notlar.length : 0;
+  $('#genel-ort').textContent = genel.toFixed(2);
+}
+
+/* ══════════════════ POMODORO (timestamp tabanlı) ══════════════════ */
+const POMO_SURE = 25*60;
+let pomo = {running:false, endAt:null, remaining:POMO_SURE, iv:null};
+function pomoGoster(sn){
+  const m=String(Math.floor(sn/60)).padStart(2,'0'), s=String(sn%60).padStart(2,'0');
+  $('#pomo-time').textContent = m+':'+s;
+}
+function pomoStart(){
+  if(pomo.running) return;
+  pomo.running=true; pomo.endAt=Date.now()+pomo.remaining*1000;
+  $('#pomo-ring').classList.add('running');
+  $('#pomo-start').innerHTML='<i class="fa-solid fa-hourglass-half"></i> Çalışıyor…';
+  pomo.iv=setInterval(()=>{
+    const rem=Math.max(0, Math.round((pomo.endAt-Date.now())/1000));
+    pomo.remaining=rem; pomoGoster(rem);
+    if(rem<=0){ pomoReset(); beep(); toast('⏰ Pomodoro tamamlandı! Mola zamanı. ☕'); }
+  },250);
+}
+function pomoPause(){
+  if(!pomo.running) return;
+  pomo.running=false; clearInterval(pomo.iv);
+  pomo.remaining=Math.max(0, Math.round((pomo.endAt-Date.now())/1000));
+  $('#pomo-ring').classList.remove('running');
+  $('#pomo-start').innerHTML='<i class="fa-solid fa-play"></i> Başlat';
+}
+function pomoReset(){
+  pomoPause(); pomo.remaining=POMO_SURE; pomoGoster(POMO_SURE);
+}
+function beep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    [0,.25,.5].forEach(t=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.frequency.value=880;
+      g.gain.setValueAtTime(.18, ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime+t+.22);
+      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+.24);
+    });
+  }catch(e){}
+}
+
+/* ══════════════════ AÇILIŞ ══════════════════ */
+function boot(){
+  state.session = loadSession();
+  if(!state.session){ $('#gate').classList.remove('hidden'); $('#app').classList.add('hidden'); $('#bottom-nav').classList.add('hidden'); return; }
+  $('#gate').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#bottom-nav').classList.remove('hidden');
+  profilSeridi(); buildNav();
+}
+
+async function init(){
+  initSupabase();
+  bindClassGrid('t-classes','t');
+  bindClassGrid('a-classes','a');
+  bindFile('t-file','t-file-prev');
+  bindFile('a-file','a-file-prev');
+  bindFile('m-file','m-file-prev');
+  notlariYukle(); pomoGoster(POMO_SURE);
+  $('#t-tarih').min = new Date().toISOString().slice(0,10);
+  await fetchPosts();
+  boot();
+  initRealtime();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
