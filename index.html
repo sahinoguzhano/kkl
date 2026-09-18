@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Kandilli Kız Lisesi v1.07 — Mobil Asistan</title>
+<title>Kandilli Kız Lisesi v1.08 — Mobil Asistan</title>
 
 <!--
 ═══════════════════════════ KURULUM REHBERİ ═══════════════════════════
@@ -17,8 +17,8 @@
      target_classes text[] default '{}',
      all_school boolean default false,
      media_kind text check (media_kind in ('image','pdf')),
-     media_url text,                       -- Storage public URL (öncelikli)
-     media_data text,                      -- Base64 data URL (fallback)
+     media_url text,
+     media_data text,
      deadline date,
      author_name text default '',
      author_role text default '',
@@ -29,11 +29,7 @@
    alter publication supabase_realtime add table posts;
 
 2) Supabase → Storage'da "media" adında PUBLIC bir bucket oluşturun.
-3) Aşağıdaki SUPABASE_URL ve SUPABASE_ANON_KEY sabitlerini doldurun.
-   Boş bırakılırsa uygulama YEREL MOD'da (cihaz belleği) çalışır.
-   NOT: Anon key'i GitHub'da herkese açık olur; gerçek güvenlik RLS +
-   servis anahtarı ile sağlanır, bu bir okul içi kolaylık uygulamasıdır.
-4) APK: npx cap init && npx cap add android → dist/ içine bu dosyayı koyun.
+3) Aşağıdaki SUPABASE_URL ve SUPABASE_ANON_KEY sabitleri zaten dolduruldu.
 ════════════════════════════════════════════════════════════════════════
 -->
 
@@ -43,7 +39,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* ═══════════ TEMEL ═══════════ */
 :root{
   --bordo:#800020; --bordo-koyu:#580016; --altin:#d4af37; --altin-soft:#f3e6c0;
   --bg:#f4f6f9; --kart:#ffffff; --metin:#232028; --soluk:#7a7484;
@@ -63,7 +58,6 @@ input,select,textarea{font-family:inherit;font-size:1rem}
 .hidden{display:none !important}
 .app-shell{max-width:560px;margin:0 auto;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 
-/* ═══════════ ÜST BAR ═══════════ */
 header{
   position:sticky;top:0;z-index:60;
   background:linear-gradient(120deg,var(--bordo) 0%,var(--bordo-koyu) 100%);
@@ -98,7 +92,6 @@ header{
 }
 .logout-btn:hover{background:#fff;color:var(--bordo)}
 
-/* profil şeridi */
 .profile-strip{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   background:#fff;border-bottom:1px solid rgba(128,0,32,.12);
@@ -111,7 +104,6 @@ header{
 .mini-link{margin-left:auto;background:none;border:none;color:var(--soluk);font-size:.72rem;text-decoration:underline}
 .mini-link:hover{color:var(--kirmizi)}
 
-/* ═══════════ İÇERİK ═══════════ */
 main{padding:16px 14px 8px}
 .section-title{
   display:flex;align-items:center;gap:10px;margin:6px 2px 14px;
@@ -127,7 +119,6 @@ main{padding:16px 14px 8px}
 }
 .kart.altin-top{border-top-color:var(--altin)}
 
-/* içerik kartları */
 .post-list{display:flex;flex-direction:column;gap:16px}
 .post-card{
   position:relative;background:var(--kart);border-radius:var(--r);
@@ -173,7 +164,6 @@ main{padding:16px 14px 8px}
 }
 .bos i{display:block;font-size:1.9rem;color:var(--altin);margin-bottom:10px}
 
-/* ═══════════ FORM ELEMANLARI ═══════════ */
 label.f-label{display:block;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--bordo);margin:14px 0 6px}
 .f-input,select.f-input,textarea.f-input{
   width:100%;padding:11px 12px;border:1.5px solid #d9d3de;border-radius:10px;background:#fff;
@@ -222,7 +212,6 @@ textarea.f-input{min-height:96px;resize:vertical}
 .super-toggle{width:100%;justify-content:center}
 .super-toggle.aktif{background:var(--bordo-koyu);color:var(--altin);border:2px solid var(--altin)}
 
-/* ═══════════ NOTLAR / POMODORO ═══════════ */
 table.notlar{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}
 table.notlar th{background:var(--bordo);color:var(--altin);padding:7px 4px;font-size:.7rem;letter-spacing:.06em}
 table.notlar td{padding:7px 4px;text-align:center;border-bottom:1px solid #eee}
@@ -237,10 +226,9 @@ table.notlar tr:hover td{background:#fbf6ea}
 .pomo-ring.running{border-top-color:var(--bordo);border-right-color:var(--bordo);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(128,0,32,.07)}}
 .pomo-time{font-family:'Playfair Display',serif;font-size:3rem;font-weight:800;color:var(--bordo-koyu)}
-.pomo-label{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--solok,#7a7484);color:var(--soluk)}
+.pomo-label{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--soluk)}
 .pomo-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
-/* ═══════════ ALT NAVİGASYON ═══════════ */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;z-index:70;
   max-width:560px;margin:0 auto;
@@ -263,7 +251,6 @@ table.notlar tr:hover td{background:#fbf6ea}
   content:'';position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--altin);border-radius:0 0 4px 4px;
 }
 
-/* ═══════════ GİRİŞ EKRANI (GATE) ═══════════ */
 .gate{
   position:fixed;inset:0;z-index:100;overflow-y:auto;
   background:
@@ -300,7 +287,6 @@ table.notlar tr:hover td{background:#fbf6ea}
 .gate-alt button:hover{color:var(--altin)}
 .gate .v-foot{margin-top:18px;font-size:.68rem;color:rgba(255,255,255,.5);letter-spacing:.14em}
 
-/* ═══════════ MODALLAR ═══════════ */
 .modal{
   position:fixed;inset:0;z-index:110;background:rgba(35,0,10,.66);
   display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease;
@@ -316,7 +302,6 @@ table.notlar tr:hover td{background:#fbf6ea}
 .modal-head .x{background:none;border:none;color:var(--altin);font-size:1.2rem}
 .modal-body{padding:6px 18px 22px}
 
-/* ═══════════ LIGHTBOX & TOAST ═══════════ */
 .lightbox{position:fixed;inset:0;z-index:130;background:rgba(10,0,4,.92);display:flex;align-items:center;justify-content:center;padding:18px;animation:fadeIn .2s}
 .lightbox img{max-width:100%;max-height:92vh;border-radius:8px;border:2px solid var(--altin);box-shadow:0 12px 40px rgba(0,0,0,.6)}
 .lightbox .lb-close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;background:var(--altin);border:none;color:var(--bordo-koyu);width:40px;height:40px;border-radius:50%;font-size:1.1rem;font-weight:800}
@@ -332,12 +317,11 @@ table.notlar tr:hover td{background:#fbf6ea}
 </head>
 <body>
 
-<!-- ══════════════════ GİRİŞ KAPISI ══════════════════ -->
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="crest">KKL</div>
     <h1>Kandilli Kız Lisesi</h1>
-    <div class="motto">Mobil Asistan · v1.07</div>
+    <div class="motto">Mobil Asistan · v1.08</div>
     <div class="rule"><i class="fa-solid fa-diamond"></i></div>
 
     <div class="gate-form">
@@ -361,14 +345,13 @@ table.notlar tr:hover td{background:#fbf6ea}
       <span style="color:rgba(255,255,255,.4)">|</span>
       <button onclick="modalAc('modal-idare')"><i class="fa-solid fa-building-columns"></i> İdare Girişi</button>
     </div>
-    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 1.07 · EYLÜL 2026</div>
+    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 1.08 · EYLÜL 2026</div>
   </div>
 </div>
 
-<!-- ÖĞRETMEN MODALI -->
 <div class="modal hidden" id="modal-ogretmen">
   <div class="modal-box">
-    <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.07</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.08</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <label class="f-label" for="o-sifre">Öğretmen Şifresi</label>
       <input class="f-input" id="o-sifre" type="password" placeholder="••••••••">
@@ -386,10 +369,9 @@ table.notlar tr:hover td{background:#fbf6ea}
   </div>
 </div>
 
-<!-- İDARE MODALI -->
 <div class="modal hidden" id="modal-idare">
   <div class="modal-box">
-    <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.07</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.08</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <label class="f-label" for="i-sifre">İdare Şifresi</label>
       <input class="f-input" id="i-sifre" type="password" placeholder="••••••••">
@@ -405,7 +387,6 @@ table.notlar tr:hover td{background:#fbf6ea}
   </div>
 </div>
 
-<!-- ══════════════════ UYGULAMA ══════════════════ -->
 <div class="app-shell hidden" id="app">
   <header>
     <div class="logo">KKL</div>
@@ -413,7 +394,7 @@ table.notlar tr:hover td{background:#fbf6ea}
       <div class="name">Kandilli Kız Lisesi</div>
       <div class="sub">Mobil Asistan</div>
     </div>
-    <span class="v-badge">v1.07</span>
+    <span class="v-badge">v1.08</span>
     <div class="quick-logins" id="quick-logins">
       <button onclick="ogrenciIcinGate()">Öğrenci</button>
       <button onclick="modalAc('modal-ogretmen')">Öğretmen</button>
@@ -426,25 +407,21 @@ table.notlar tr:hover td{background:#fbf6ea}
 
   <main id="main">
 
-    <!-- ÖĞRENCİ: DUYURULAR -->
     <section data-tab="ogr-duyurular">
       <div class="section-title"><span class="bar"></span><h2>Okul Duyuruları</h2><span class="hint" id="hint-duyuru"></span></div>
       <div class="post-list" id="ogr-duyuru-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
 
-    <!-- ÖĞRENCİ: ÖDEVLER -->
     <section data-tab="ogr-odevler" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Akşam Ödev Takibi</h2><span class="hint" id="hint-odev"></span></div>
       <div class="post-list" id="ogr-odev-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
 
-    <!-- ÖĞRENCİ: MENÜ -->
     <section data-tab="ogr-menu" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Günün Yemek Menüsü</h2></div>
       <div id="ogr-menu-box"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
 
-    <!-- ÖĞRENCİ: NOTLARIM -->
     <section data-tab="ogr-notlar" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Kişisel Not Takibi</h2></div>
       <div class="kart altin-top">
@@ -467,7 +444,6 @@ table.notlar tr:hover td{background:#fbf6ea}
       </div>
     </section>
 
-    <!-- ÖĞRENCİ: POMODORO -->
     <section data-tab="ogr-pomodoro" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Pomodoro Çalışma Sayacı</h2></div>
       <div class="kart altin-top" style="text-align:center">
@@ -483,7 +459,6 @@ table.notlar tr:hover td{background:#fbf6ea}
       </div>
     </section>
 
-    <!-- ÖĞRETMEN: EKLE -->
     <section data-tab="ekle" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Ödev veya Duyuru Ekle</h2></div>
       <div class="kart">
@@ -507,13 +482,11 @@ table.notlar tr:hover td{background:#fbf6ea}
       </div>
     </section>
 
-    <!-- ÖĞRETMEN: YAYINLADIKLARIM -->
     <section data-tab="yayinlarim" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Yayınladığım Ödev &amp; Duyurular</h2></div>
       <div class="post-list" id="yayin-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
 
-    <!-- İDARE: EKLE -->
     <section data-tab="idare-ekle" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>İdare Duyuru &amp; Menü Ekle</h2></div>
       <div class="kart">
@@ -540,7 +513,6 @@ table.notlar tr:hover td{background:#fbf6ea}
       </div>
     </section>
 
-    <!-- İDARE: İÇERİK YÖNETİMİ -->
     <section data-tab="yonetim" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>İçerik Yönetimi</h2></div>
       <button class="btn btn-ghost super-toggle" id="super-btn" onclick="superToggle()" style="margin-bottom:14px">
@@ -549,7 +521,6 @@ table.notlar tr:hover td{background:#fbf6ea}
       <div class="post-list" id="yonetim-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
     </section>
 
-    <!-- ORTAK: ÖĞRENCİ AKIŞI (Öğretmen & İdare) -->
     <section data-tab="genel-akis" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Öğrenci Akışı</h2><span class="hint">Yeniden eskiye</span></div>
       <div class="post-list" id="akis-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
@@ -563,10 +534,9 @@ table.notlar tr:hover td{background:#fbf6ea}
 <div class="lightbox hidden" id="lightbox" onclick="lightboxKapat()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img id="lightbox-img" alt="Büyütülmüş görsel"></div>
 
 <script>
-/* ══════════════════ SABİTLER ══════════════════ */
-const CURRENT_VERSION = '1.07';
-const SUPABASE_URL      = 'https://jjlmmdwtvtkpgyvncrrk.supabase.co';   // ← ör: https://xyz.supabase.co
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbG1tZHd0dnRrcGd5dm5jcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2ODIzMDIsImV4cCI6MjEwNTI1ODMwMn0.VLUE7mbG_Ks83y9rMGr9G7DT4762b9_BFFym8jXiuJk';   // ← anon public key
+const CURRENT_VERSION = '1.08';
+const SUPABASE_URL      = 'https://jjlmmdwtvtkpgyvncrrk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbG1tZHd0dnRrcGd5dm5jcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2ODIzMDIsImV4cCI6MjEwNTI1ODMwMn0.VLUE7mbG_Ks83y9rMGr9G7DT4762b9_BFFym8jXiuJk';
 const OGRETMEN_SIFRE = 'kandilli_ogretmen';
 const IDARE_SIFRE    = 'kandilli_idare';
 const ALL_CLASSES = ['9-A','9-B','10-A','10-B','11-A','11-B','12-A','12-B'];
@@ -592,12 +562,10 @@ const NAVS = {
   ]
 };
 
-/* ══════════════════ DURUM ══════════════════ */
 let sb = null;
 const state = { posts:[], session:null, superMode:false, aktifTab:null, notlar:[] };
 const fileState = {};
 
-/* ══════════════════ YARDIMCILAR ══════════════════ */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -605,7 +573,6 @@ const fmtTarih = d => d ? new Date(d.length===10 ? d+'T00:00:00' : d).toLocaleDa
 const SESSION_KEY = 'kkl_session_v'+CURRENT_VERSION;
 const NOTLAR_KEY  = 'kkl_notlar_v'+CURRENT_VERSION;
 
-/* Sürüm kontrolü: eski sürüm verilerini temizle */
 ['kkl_session','kkl_notlar'].forEach(prefix=>{
   Object.keys(localStorage).forEach(k=>{
     if(k.startsWith(prefix+'_v') && k !== prefix+'_v'+CURRENT_VERSION) localStorage.removeItem(k);
@@ -623,7 +590,6 @@ function modalAc(id){ $('#'+id).classList.remove('hidden'); }
 function modalKapat(id){ $('#'+id).classList.add('hidden'); }
 function ogrenciIcinGate(){ toast('Öğrenci profili zaten bu cihazda kilitli. Değiştirmek için profil şeridindeki "Sıfırla" bağlantısını kullanın.'); }
 
-/* ══════════════════ SUPABASE ══════════════════ */
 function initSupabase(){
   if(!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return false;
   try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
@@ -686,9 +652,14 @@ async function uploadToStorage(file){
   }catch(e){ return null; }
 }
 
-/* ══════════════════ OTURUM ══════════════════ */
 function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; } }
+function loadSession(){ 
+  try{ 
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if(s && s.role) return s;
+    return null; 
+  }catch(e){ return null; } 
+}
 
 function ogrenciGiris(){
   const ad = $('#g-ad').value.trim();
@@ -721,7 +692,6 @@ function profilSifirla(){
   localStorage.removeItem(SESSION_KEY); localStorage.removeItem(NOTLAR_KEY); location.reload();
 }
 
-/* ══════════════════ NAVİGASYON ══════════════════ */
 function buildNav(){
   const nav = $('#bottom-nav');
   nav.innerHTML = NAVS[state.session.role].map(t =>
@@ -753,7 +723,6 @@ function profilSeridi(){
   durumGuncelle();
 }
 
-/* ══════════════════ VERİ HAZIRLAMA ══════════════════ */
 function siraliEski(){ return [...state.posts].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at)); }
 function orderMap(){ const m=new Map(); siraliEski().forEach((p,i)=>m.set(p.id, i+1)); return m; }
 const enYeni = arr => [...arr].sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
@@ -805,7 +774,6 @@ function postCard(p, {canDelete=false}={}){
 
 function bosMesaj(ikon, metin){ return `<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`; }
 
-/* ══════════════════ RENDER ══════════════════ */
 function renderAll(){
   const r = state.session?.role; if(!r) return;
   if(r==='ogrenci'){
@@ -824,7 +792,8 @@ function renderAll(){
     $('#akis-list').innerHTML = akis.length? akis.map(p=>postCard(p)).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
   }
   if(r==='idare'){
-    const liste = state.superMode ? enYeni([...state.posts]) : enYeni(kendiPostlarim());
+    const kendi = enYeni(kendiPostlarim());
+    const liste = state.superMode ? enYeni([...state.posts]) : kendi;
     $('#yonetim-list').innerHTML = liste.length? liste.map(p=>postCard(p,{canDelete:true})).join('')
       : bosMesaj('fa-box-open', state.superMode?'Okulda hiç içerik yok.':'Henüz paylaşımınız yok. Süper İdare ile tümünü görüntüleyebilirsiniz.');
     const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
@@ -833,11 +802,13 @@ function renderAll(){
 }
 
 function renderMenu(){
-  const m = enYeni(state.posts.filter(p=>p.type==='yemek'))[0];
+  const tumMenuler = state.posts.filter(p=>p.type==='yemek');
+  const m = enYeni(tumMenuler)[0];
   $('#ogr-menu-box').innerHTML = m
     ? `<div class="kart altin-top">${postCard(m)}</div>`
     : bosMesaj('fa-utensils','Menü eklenmedi.');
 }
+
 function superToggle(){
   state.superMode = !state.superMode;
   $('#super-btn').classList.toggle('aktif', state.superMode);
@@ -847,7 +818,6 @@ function superToggle(){
   renderAll();
 }
 
-/* ══════════════════ ŞUBE SEÇİM MANTIĞI ══════════════════ */
 function buildClassGrid(containerId, prefix){
   $('#'+containerId).innerHTML =
     `<label class="check-item full"><input type="checkbox" id="${prefix}-all" onchange="tumOkulDegisti('${prefix}')"><span><i class="fa-solid fa-school"></i> Tüm Okul</span></label>`
@@ -867,7 +837,6 @@ function seciliSiniflar(prefix){
   return {all:false, classes:$$('.'+prefix+'-box:checked').map(b=>b.value)};
 }
 
-/* ══════════════════ DOSYA YÜKLEME ══════════════════ */
 function bindFile(inputId, prevId){
   const inp = document.getElementById(inputId);
   inp.addEventListener('change', ()=>{
@@ -893,10 +862,10 @@ function fileTemizle(inputId, prevId){
 async function medyaHazirla(inputId){
   const f = fileState[inputId];
   if(!f) return {media_kind:null, media_url:null, media_data:null};
-  const url = await uploadToStorage(f.file);       // önce Supabase Storage dene
+  const url = await uploadToStorage(f.file);
   return url
     ? {media_kind:f.kind, media_url:url, media_data:null}
-    : {media_kind:f.kind, media_url:null, media_data:f.dataUrl}; // yoksa Base64 fallback
+    : {media_kind:f.kind, media_url:null, media_data:f.dataUrl};
 }
 function formTemizle(ids, prefix){
   ids.forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
@@ -904,7 +873,6 @@ function formTemizle(ids, prefix){
   if($('#'+prefix+'-all')){ $('#'+prefix+'-all').checked=false; tumOkulDegisti(prefix); }
 }
 
-/* ══════════════════ YAYINLAMA ══════════════════ */
 async function ogretmenYayinla(){
   const tur = document.querySelector('input[name="t-tur"]:checked').value;
   const konu = $('#t-konu').value.trim(), metin = $('#t-metin').value.trim();
@@ -923,6 +891,7 @@ async function ogretmenYayinla(){
   toast(tur==='odev'?'Ödev canlıya yayınlandı! ✅':'Duyuru canlıya yayınlandı! ✅');
   tabSec('yayinlarim');
 }
+
 async function idareDuyuruYayinla(){
   const baslik=$('#a-baslik').value.trim(), metin=$('#a-metin').value.trim();
   if(!baslik && !metin){ toast('Duyuru başlığı veya metni giriniz.'); return; }
@@ -939,6 +908,7 @@ async function idareDuyuruYayinla(){
   formTemizle(['a-baslik','a-metin'],'a'); fileTemizle('a-file','a-file-prev');
   toast('İdare duyurusu yayınlandı! 📣');
 }
+
 async function menuGuncelle(){
   const metin=$('#m-metin').value.trim();
   if(!metin && !fileState['m-file']){ toast('Menü metni veya dosyası giriniz.'); return; }
@@ -954,7 +924,6 @@ async function menuGuncelle(){
   toast('Yemek menüsü güncellendi! 🍽');
 }
 
-/* ══════════════════ MEDYA GÖRÜNTÜLEME ══════════════════ */
 function openLightbox(src){ $('#lightbox-img').src = src; $('#lightbox').classList.remove('hidden'); }
 function lightboxKapat(){ $('#lightbox').classList.add('hidden'); }
 
@@ -968,14 +937,13 @@ function dataUrlToBlob(dataUrl){
 function openPdf(id){
   const p = state.posts.find(x=>x.id===id); if(!p) return;
   if(p.media_url){ window.open(p.media_url,'_blank'); return; }
-  if(p.media_data){ // data: URL yerine Blob URL — Chrome/WebView engeline takılmaz
+  if(p.media_data){
     const url = URL.createObjectURL(dataUrlToBlob(p.media_data));
     window.open(url,'_blank');
     setTimeout(()=>URL.revokeObjectURL(url), 60000);
   }
 }
 
-/* ══════════════════ NOTLAR ══════════════════ */
 function notlariYukle(){ try{ state.notlar = JSON.parse(localStorage.getItem(NOTLAR_KEY))||[]; }catch(e){ state.notlar=[]; } }
 function notlariKaydet(){ try{ localStorage.setItem(NOTLAR_KEY, JSON.stringify(state.notlar)); }catch(e){} }
 function notEkle(){
@@ -998,7 +966,6 @@ function renderNotlar(){
   $('#genel-ort').textContent = genel.toFixed(2);
 }
 
-/* ══════════════════ POMODORO (timestamp tabanlı) ══════════════════ */
 const POMO_SURE = 25*60;
 let pomo = {running:false, endAt:null, remaining:POMO_SURE, iv:null};
 function pomoGoster(sn){
@@ -1039,24 +1006,30 @@ function beep(){
   }catch(e){}
 }
 
-/* ══════════════════ AÇILIŞ ══════════════════ */
 function boot(){
   state.session = loadSession();
-  if(!state.session){ $('#gate').classList.remove('hidden'); $('#app').classList.add('hidden'); $('#bottom-nav').classList.add('hidden'); return; }
+  if(!state.session || !state.session.role){ 
+    $('#gate').classList.remove('hidden'); 
+    $('#app').classList.add('hidden'); 
+    $('#bottom-nav').classList.add('hidden'); 
+    return; 
+  }
   $('#gate').classList.add('hidden');
   $('#app').classList.remove('hidden');
   $('#bottom-nav').classList.remove('hidden');
-  profilSeridi(); buildNav();
+  profilSeridi(); 
+  buildNav();
 }
 
 async function init(){
   initSupabase();
-  bindClassGrid('t-classes','t');
-  bindClassGrid('a-classes','a');
+  buildClassGrid('t-classes','t');
+  buildClassGrid('a-classes','a');
   bindFile('t-file','t-file-prev');
   bindFile('a-file','a-file-prev');
   bindFile('m-file','m-file-prev');
-  notlariYukle(); pomoGoster(POMO_SURE);
+  notlariYukle(); 
+  pomoGoster(POMO_SURE);
   $('#t-tarih').min = new Date().toISOString().slice(0,10);
   await fetchPosts();
   boot();
