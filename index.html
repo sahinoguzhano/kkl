@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Kandilli Kız Lisesi v1.10 — Mobil Asistan</title>
+<title>Kandilli Kız Lisesi v1.11 — Mobil Asistan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -12,7 +12,7 @@
 :root{
   --bordo:#800020; --bordo-koyu:#580016; --altin:#d4af37; --altin-soft:#f3e6c0;
   --bg:#f4f6f9; --kart:#ffffff; --metin:#232028; --soluk:#7a7484;
-  --yesil:#1e7d4f; --kirmizi:#b3261e; --golge:0 6px 18px rgba(88,0,22,.10);
+  --yesil:#1e7d4f; --kirmizi:#b3261e; --mavi:#2c5f8a; --golge:0 6px 18px rgba(88,0,22,.10);
   --r:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -63,6 +63,8 @@ main{padding:16px 14px 8px}
 .post-list{display:flex;flex-direction:column;gap:16px}
 .post-card{position:relative;background:var(--kart);border-radius:var(--r);border:1px solid rgba(128,0,32,.08);border-left:4px solid var(--altin);box-shadow:var(--golge);padding:16px 14px 14px;transition:transform .18s ease, box-shadow .18s ease}
 .post-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(88,0,22,.16)}
+.post-card.unread{background:#fffdf3;border-left-width:5px}
+.post-card.unread .post-head h3{color:var(--bordo)}
 .order-badge{position:absolute;top:-11px;right:-7px;min-width:34px;height:34px;padding:0 6px;border-radius:999px;background:var(--bordo);color:var(--altin);border:2px solid var(--altin);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;box-shadow:0 3px 8px rgba(88,0,22,.35)}
 .post-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding-right:34px}
 .post-head h3{font-size:1.05rem;color:var(--bordo-koyu);flex:1 1 100%}
@@ -70,10 +72,11 @@ main{padding:16px 14px 8px}
 .chip-bordo{background:var(--bordo);color:#fff}
 .chip-altin{background:var(--altin);color:var(--bordo-koyu)}
 .chip-menu{background:var(--bordo-koyu);color:var(--altin)}
-.chip-program{background:#2c5f8a;color:#fff}
+.chip-program{background:var(--mavi);color:#fff}
 .chip-yesil{background:#e3f2e9;color:var(--yesil)}
 .chip-kirmizi{background:#fdeeee;color:var(--kirmizi)}
 .chip-gri{background:#eceef2;color:#555}
+.chip-unread{background:var(--altin);color:var(--bordo-koyu);animation:pulse 1.5s ease-in-out infinite}
 .post-meta{font-size:.74rem;color:var(--soluk);margin:2px 0 8px;display:flex;gap:10px;flex-wrap:wrap}
 .post-body{font-size:.92rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .class-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
@@ -83,11 +86,12 @@ main{padding:16px 14px 8px}
 .post-foot{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .del-btn{margin-left:auto;background:#fff;border:1.5px solid var(--kirmizi);color:var(--kirmizi);font-size:.74rem;font-weight:800;padding:7px 12px;border-radius:8px;transition:.2s;display:inline-flex;align-items:center;gap:6px}
 .del-btn:hover{background:var(--kirmizi);color:#fff;transform:translateY(-1px)}
+.hide-btn{border-color:#8a8595;color:#6f6a7d}
+.hide-btn:hover{background:#6f6a7d;color:#fff}
 
 .bos{text-align:center;color:var(--soluk);padding:34px 16px;border:2px dashed rgba(128,0,32,.2);border-radius:var(--r);background:rgba(255,255,255,.6);font-size:.9rem}
 .bos i{display:block;font-size:1.9rem;color:var(--altin);margin-bottom:10px}
 
-/* Yaklaşan etkinlik uyarısı */
 .alert-box{background:#fff8e6;border:1.5px solid var(--altin);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--golge)}
 .alert-title{font-weight:800;color:var(--bordo);font-size:.86rem;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .alert-item{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:.82rem;border-bottom:1px dashed rgba(128,0,32,.12)}
@@ -95,9 +99,8 @@ main{padding:16px 14px 8px}
 .alert-item i{color:var(--bordo);width:16px;text-align:center}
 .alert-badge{margin-left:auto;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:#e3f2e9;color:var(--yesil);white-space:nowrap}
 .alert-badge.urgent{background:#fdeeee;color:var(--kirmizi);animation:pulse 1.5s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
-/* Kullanıcı listesi */
 .user-list{display:flex;flex-direction:column;gap:10px}
 .user-item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:10px;padding:12px;box-shadow:var(--golge);border:1px solid rgba(128,0,32,.08);transition:.2s}
 .user-item.banned{opacity:.55;border-left:4px solid var(--kirmizi)}
@@ -139,6 +142,7 @@ textarea.f-input{min-height:96px;resize:vertical}
 .check-item{display:flex;align-items:center;gap:6px;background:#fbf9f4;border:1px solid rgba(128,0,32,.15);border-radius:8px;padding:8px;font-size:.82rem;font-weight:600;transition:.15s;cursor:pointer}
 .check-item:hover{border-color:var(--altin)}
 .check-item.full{grid-column:1/-1;background:var(--altin-soft);border-color:var(--altin);font-weight:800}
+.check-item.teach-item{grid-column:1/-1;background:#eef3fb;border-color:var(--mavi);color:var(--mavi);font-weight:800}
 .check-item input{accent-color:var(--bordo);width:16px;height:16px}
 .radio-split{display:flex;gap:8px}
 .radio-split label{flex:1;text-align:center;border:1.5px solid rgba(128,0,32,.25);border-radius:10px;padding:11px 6px;font-weight:800;font-size:.86rem;cursor:pointer;transition:.2s;background:#fff}
@@ -160,7 +164,7 @@ table.notlar tr:hover td{background:#fbf6ea}
 .pomo-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:70;max-width:560px;margin:0 auto;background:linear-gradient(180deg,var(--bordo) 0%,var(--bordo-koyu) 100%);border-top:2px solid var(--altin);display:flex;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -6px 18px rgba(88,0,22,.35)}
-.nav-item{flex:1;background:none;border:none;color:rgba(255,255,255,.62);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px 9px;font-size:.62rem;font-weight:700;letter-spacing:.02em;position:relative;transition:.2s}
+.nav-item{flex:1;background:none;border:none;color:rgba(255,255,255,.62);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px 9px;font-size:.6rem;font-weight:700;letter-spacing:.02em;position:relative;transition:.2s}
 .nav-item i{font-size:1.12rem;transition:transform .2s}
 .nav-item:hover{color:#fff}
 .nav-item.aktif{color:var(--altin)}
@@ -201,7 +205,7 @@ table.notlar tr:hover td{background:#fbf6ea}
 #toast-wrap{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:140;display:flex;flex-direction:column;gap:8px;width:min(92%,440px)}
 .toast{background:var(--bordo-koyu);color:#fff;border-left:4px solid var(--altin);padding:12px 14px;border-radius:10px;font-size:.84rem;font-weight:600;box-shadow:0 8px 22px rgba(0,0,0,.35);animation:toastIn .3s ease}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px)}}
-@media (max-width:380px){ .head-titles .name{font-size:.9rem} .nav-item{font-size:.58rem} }
+@media (max-width:380px){ .head-titles .name{font-size:.9rem} .nav-item{font-size:.56rem} }
 </style>
 </head>
 <body>
@@ -211,11 +215,11 @@ table.notlar tr:hover td{background:#fbf6ea}
   <div class="gate-card">
     <div class="crest">KKL</div>
     <h1>Kandilli Kız Lisesi</h1>
-    <div class="motto">Mobil Asistan · v1.10</div>
+    <div class="motto">Mobil Asistan · v1.11</div>
     <div class="rule"><i class="fa-solid fa-diamond"></i></div>
     <div class="gate-form">
       <label class="f-label" for="g-ad">Adın / Lakabın</label>
-      <input class="f-input" id="g-ad" maxlength="40" placeholder="örn. Zeynep A.">
+      <input class="f-input" id="g-ad" maxlength="40" placeholder="örn. Zeynep A." oninput="liveClean(this)">
       <label class="f-label" for="g-sinif">Sınıf / Şube Seçiniz</label>
       <select class="f-input" id="g-sinif">
         <option value="9-A">9-A</option><option value="9-B">9-B</option>
@@ -233,19 +237,19 @@ table.notlar tr:hover td{background:#fbf6ea}
       <span style="color:rgba(255,255,255,.4)">|</span>
       <button onclick="modalAc('modal-idare')"><i class="fa-solid fa-building-columns"></i> İdare Girişi</button>
     </div>
-    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 1.10 · EYLÜL 2026</div>
+    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 1.11 · EYLÜL 2026</div>
   </div>
 </div>
 
 <!-- ÖĞRETMEN MODALI -->
 <div class="modal hidden" id="modal-ogretmen">
   <div class="modal-box">
-    <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.10</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v1.11</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <label class="f-label" for="o-sifre">Öğretmen Şifresi</label>
       <input class="f-input" id="o-sifre" type="password" placeholder="••••••••">
       <label class="f-label" for="o-ad">Ad – Soyad</label>
-      <input class="f-input" id="o-ad" maxlength="60" placeholder="örn. Ayşe Yılmaz">
+      <input class="f-input" id="o-ad" maxlength="60" placeholder="örn. Ayşe Yılmaz" oninput="liveClean(this)">
       <label class="f-label" for="o-brans">Branşınızı Seçin</label>
       <select class="f-input" id="o-brans">
         <option>Fizik</option><option>Matematik</option><option>Kimya</option><option>Biyoloji</option>
@@ -261,12 +265,12 @@ table.notlar tr:hover td{background:#fbf6ea}
 <!-- İDARE MODALI -->
 <div class="modal hidden" id="modal-idare">
   <div class="modal-box">
-    <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.10</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v1.11</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <label class="f-label" for="i-sifre">İdare Şifresi</label>
       <input class="f-input" id="i-sifre" type="password" placeholder="••••••••">
       <label class="f-label" for="i-ad">Ad – Soyad</label>
-      <input class="f-input" id="i-ad" maxlength="60" placeholder="örn. Mehmet Demir">
+      <input class="f-input" id="i-ad" maxlength="60" placeholder="örn. Mehmet Demir" oninput="liveClean(this)">
       <label class="f-label" for="i-unvan">Unvanınızı Seçin</label>
       <select class="f-input" id="i-unvan">
         <option>Okul Müdürü</option><option>Müdür Başyardımcısı</option><option>Müdür Yardımcısı</option>
@@ -282,7 +286,7 @@ table.notlar tr:hover td{background:#fbf6ea}
   <header>
     <div class="logo">KKL</div>
     <div class="head-titles"><div class="name">Kandilli Kız Lisesi</div><div class="sub">Mobil Asistan</div></div>
-    <span class="v-badge">v1.10</span>
+    <span class="v-badge">v1.11</span>
     <div class="quick-logins" id="quick-logins">
       <button onclick="ogrenciIcinGate()">Öğrenci</button>
       <button onclick="modalAc('modal-ogretmen')">Öğretmen</button>
@@ -320,7 +324,7 @@ table.notlar tr:hover td{background:#fbf6ea}
       <div class="section-title"><span class="bar"></span><h2>Kişisel Not Takibi</h2></div>
       <div class="kart altin-top">
         <label class="f-label" for="n-ders">Ders Adı</label>
-        <input class="f-input" id="n-ders" maxlength="40" placeholder="örn. Matematik">
+        <input class="f-input" id="n-ders" maxlength="40" placeholder="örn. Matematik" oninput="liveClean(this)">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           <div><label class="f-label" for="n-y1">Y1</label><input class="f-input" id="n-y1" type="number" min="0" max="100"></div>
           <div><label class="f-label" for="n-y2">Y2</label><input class="f-input" id="n-y2" type="number" min="0" max="100"></div>
@@ -354,6 +358,18 @@ table.notlar tr:hover td{background:#fbf6ea}
       </div>
     </section>
 
+    <!-- ÖĞRETMEN: DUYURULAR (öğretmene özel) -->
+    <section data-tab="t-duyurular" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Öğretmen Duyuruları</h2><span class="hint" id="hint-t-duyuru"></span></div>
+      <div class="post-list" id="t-duyuru-list"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
+    <!-- ÖĞRETMEN: YEMEK MENÜSÜ -->
+    <section data-tab="t-menu" class="hidden">
+      <div class="section-title"><span class="bar"></span><h2>Günün Yemek Menüsü</h2></div>
+      <div id="t-menu-box"><div class="bos"><i class="fa-solid fa-spinner fa-spin"></i>Yükleniyor…</div></div>
+    </section>
+
     <!-- ÖĞRETMEN: EKLE -->
     <section data-tab="ekle" class="hidden">
       <div class="section-title"><span class="bar"></span><h2>Ödev veya Duyuru Ekle</h2></div>
@@ -364,7 +380,7 @@ table.notlar tr:hover td{background:#fbf6ea}
           <label><input type="radio" name="t-tur" value="duyuru"><span><i class="fa-solid fa-bullhorn"></i> Duyuru Yap</span></label>
         </div>
         <label class="f-label" for="t-konu">Ders / Konu Adı</label>
-        <input class="f-input" id="t-konu" maxlength="80" placeholder="örn. Fizik — Kuvvet ve Hareket">
+        <input class="f-input" id="t-konu" maxlength="80" placeholder="örn. Fizik — Kuvvet ve Hareket" oninput="liveClean(this)">
         <label class="f-label" for="t-metin">Açıklama</label>
         <textarea class="f-input" id="t-metin" maxlength="1200" placeholder="Detayları yazınız…"></textarea>
         <label class="f-label" for="t-tarih">Son Teslim / Geçerlilik Tarihi</label>
@@ -390,10 +406,10 @@ table.notlar tr:hover td{background:#fbf6ea}
       <div class="kart">
         <h3 style="color:var(--bordo-koyu);margin-bottom:4px">1. Okul Duyurusu Yayınla</h3>
         <label class="f-label" for="a-baslik">Duyuru Başlığı</label>
-        <input class="f-input" id="a-baslik" maxlength="80" placeholder="örn. Cumhuriyet Bayramı Töreni">
+        <input class="f-input" id="a-baslik" maxlength="80" placeholder="örn. Cumhuriyet Bayramı Töreni" oninput="liveClean(this)">
         <label class="f-label" for="a-metin">Duyuru Metni</label>
         <textarea class="f-input" id="a-metin" maxlength="1200" placeholder="Detayları yazınız…"></textarea>
-        <label class="f-label">Hedef Sınıflar</label>
+        <label class="f-label">Hedef Kitle (sınıf, öğretmen veya tüm okul)</label>
         <div class="check-grid" id="a-classes"></div>
         <label class="f-label">Görsel veya PDF Dosyası</label>
         <div class="file-zone"><input type="file" id="a-file" accept="image/*,application/pdf"><div id="a-file-prev"></div></div>
@@ -461,12 +477,13 @@ table.notlar tr:hover td{background:#fbf6ea}
 <div class="lightbox hidden" id="lightbox" onclick="lightboxKapat()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img id="lightbox-img" alt="Büyütülmüş görsel"></div>
 
 <script>
-const CURRENT_VERSION   = '1.10';
+const CURRENT_VERSION   = '1.11';
 const SUPABASE_URL      = 'https://jjlmmdwtvtkpgyvncrrk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbG1tZHd0dnRrcGd5dm5jcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2ODIzMDIsImV4cCI6MjEwNTI1ODMwMn0.VLUE7mbG_Ks83y9rMGr9G7DT4762b9_BFFym8jXiuJk';
 const OGRETMEN_SIFRE = 'kandilli_ogretmen';
 const IDARE_SIFRE    = 'kandilli_idare';
 const ALL_CLASSES = ['9-A','9-B','10-A','10-B','11-A','11-B','12-A','12-B'];
+const OGRETMEN_KEY = 'OGRETMENLER';   // öğretmen hedefleme için özel anahtar
 const ROLE_LABEL = {ogrenci:'Öğrenci', ogretmen:'Öğretmen', idare:'İdare'};
 
 const NAVS = {
@@ -478,34 +495,51 @@ const NAVS = {
     {id:'ogr-pomodoro',  icon:'fa-stopwatch',     label:'Pomodoro'}
   ],
   ogretmen:[
-    {id:'ekle',        icon:'fa-circle-plus',  label:'Ödev/Duyuru Ekle'},
-    {id:'yayinlarim',  icon:'fa-list-check',   label:'Yayınladıklarım'},
-    {id:'genel-akis',  icon:'fa-users',        label:'Öğrenci Akışı'}
+    {id:'t-duyurular', icon:'fa-bullhorn',     label:'Duyurular'},
+    {id:'t-menu',      icon:'fa-utensils',     label:'Yemek Menüsü'},
+    {id:'ekle',        icon:'fa-circle-plus',  label:'Ekle'},
+    {id:'yayinlarim',  icon:'fa-list-check',   label:'Yayınlarım'},
+    {id:'genel-akis',  icon:'fa-users',        label:'Akış'}
   ],
   idare:[
     {id:'idare-ekle',    icon:'fa-circle-plus',    label:'Duyuru/Menü'},
     {id:'idare-program', icon:'fa-calendar-days',  label:'Ders Programı'},
     {id:'yonetim',       icon:'fa-shield-halved',  label:'İçerik Yönetimi'},
     {id:'kullanicilar',  icon:'fa-users-gear',     label:'Katılımcılar'},
-    {id:'genel-akis',    icon:'fa-users',          label:'Öğrenci Akışı'}
+    {id:'genel-akis',    icon:'fa-users',          label:'Akış'}
   ]
 };
 
 let sb = null;
-const state = { posts:[], users:[], session:null, superMode:false, aktifTab:null, notlar:[], userFilter:'all' };
+let appReadyForNotify = false;
+const state = { posts:[], users:[], session:null, superMode:false, aktifTab:null, notlar:[], userFilter:'all', readSet:new Set(), hiddenSet:new Set() };
 const fileState = {};
 
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtTarih = d => d ? new Date(d.length===10 ? d+'T00:00:00' : d).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
-const fmtDateTime = d => d ? new Date(d).toLocaleString('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
 const SESSION_KEY = 'kkl_session_v'+CURRENT_VERSION;
 const NOTLAR_KEY  = 'kkl_notlar_v'+CURRENT_VERSION;
 const POSTS_KEY   = 'kkl_posts_v'+CURRENT_VERSION;
+const PREFS_KEY   = 'kkl_prefs_v'+CURRENT_VERSION;
+
+/* ═══════════ GÜVENLİK: XSS ═══════════ */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function cleanText(s){
+  if(s==null) return '';
+  return String(s)
+    .replace(/<[^>]*>/g,'')
+    .replace(/javascript:/gi,'')
+    .replace(/on\w+\s*=/gi,'')
+    .replace(/[\u0000-\u001F\u007F]/g,'')
+    .trim();
+}
+function liveClean(el){ if(!el) return; el.value = el.value.replace(/[<>]/g,''); }
+
+const fmtTarih = d => d ? new Date(d.length===10 ? d+'T00:00:00' : d).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
+const fmtDateTime = d => d ? new Date(d).toLocaleString('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
 
 try{
-  ['kkl_session','kkl_notlar','kkl_posts'].forEach(prefix=>{
+  ['kkl_session','kkl_notlar','kkl_posts','kkl_prefs'].forEach(prefix=>{
     Object.keys(localStorage).forEach(k=>{
       if(k.startsWith(prefix+'_v') && k !== prefix+'_v'+CURRENT_VERSION) localStorage.removeItem(k);
     });
@@ -523,6 +557,39 @@ function modalAc(id){ const m=$('#'+id); if(m) m.classList.remove('hidden'); }
 function modalKapat(id){ const m=$('#'+id); if(m) m.classList.add('hidden'); }
 function ogrenciIcinGate(){ toast('Öğrenci profili bu cihaza kilitli. Değiştirmek için profil şeridindeki "Profil Sıfırla" bağlantısını kullanın.'); }
 
+/* ═══════════ BİLDİRİMLER ═══════════ */
+function requestNotifPermission(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'default'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted') toast('🔔 Bildirimler açıldı: yeni duyurulardan haberdar olacaksınız.');
+    });
+  }
+}
+function showNotification(title, body){
+  if(!('Notification' in window)) return;
+  if(Notification.permission !== 'granted') return;
+  try{
+    const n = new Notification(title, {body, tag:'kkl-'+Date.now()});
+    n.onclick = ()=>{ try{ window.focus(); n.close(); }catch(e){} };
+  }catch(e){ console.warn('Bildirim gösterilemedi', e); }
+}
+function relevantToMe(p){
+  const r = state.session?.role;
+  if(r==='ogrenci') return ogrenciGorur(p);
+  if(r==='ogretmen') return ogretmenGorur(p);
+  if(r==='idare') return true;
+  return false;
+}
+function maybeNotify(p){
+  if(!p || p.type!=='duyuru') return;
+  if(p.author_name===state.session?.name && p.author_role===state.session?.role) return;
+  if(!relevantToMe(p)) return;
+  showNotification('📢 Yeni Duyuru — Kandilli Kız Lisesi',
+    (p.title ? p.title+' — ' : '') + (p.body ? String(p.body).slice(0,100) : 'Yeni bir duyuru yayınlandı.'));
+}
+
+/* ═══════════ SUPABASE ═══════════ */
 function initSupabase(){
   if(!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return false;
   try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return true; }
@@ -544,7 +611,6 @@ async function fetchUsers(){
     if(!error && data) state.users = data;
   }catch(e){ console.warn('fetchUsers:', e); }
 }
-
 async function upsertUser(){
   if(!sb || !state.session) return;
   const s = state.session;
@@ -554,18 +620,15 @@ async function upsertUser(){
     if(existing){
       await sb.from('users').update({
         last_seen: new Date().toISOString(),
-        sinif: s.sinif || null, brans: s.brans || null, unvan: s.unvan || null
+        sinif: s.sinif||null, brans: s.brans||null, unvan: s.unvan||null, avatar_url: s.avatar_url||null
       }).eq('id', existing.id);
     } else {
       await sb.from('users').insert({
-        role: s.role, name: s.name,
-        sinif: s.sinif || null, brans: s.brans || null, unvan: s.unvan || null,
-        avatar_url: s.avatar_url || null
+        role:s.role, name:s.name, sinif:s.sinif||null, brans:s.brans||null, unvan:s.unvan||null, avatar_url:s.avatar_url||null
       });
     }
   }catch(e){ console.warn('upsertUser:', e); }
 }
-
 async function checkBanned(){
   if(!sb || !state.session) return false;
   try{
@@ -574,25 +637,17 @@ async function checkBanned(){
     return !error && data && data.banned;
   }catch(e){ return false; }
 }
-
 async function toggleBan(userId){
   if(!sb) return;
-  const user = state.users.find(u => u.id === userId);
-  if(!user) return;
+  const user = state.users.find(u=>u.id===userId); if(!user) return;
   const action = user.banned ? 'aktifleştirilecek' : 'yasaklanacak';
-  if(!confirm(user.name + ' ' + action + '. Emin misiniz?')) return;
+  if(!confirm(user.name+' '+action+'. Emin misiniz?')) return;
   try{
-    const {error} = await sb.from('users').update({banned: !user.banned}).eq('id', userId);
-    if(!error){
-      await fetchUsers();
-      renderUsers();
-      toast(user.name + (user.banned ? ' aktifleştirildi. ✅' : ' yasaklandı. 🚫'));
-    } else {
-      toast('İşlem başarısız: ' + error.message);
-    }
-  }catch(e){ toast('Hata: ' + e.message); }
+    const {error} = await sb.from('users').update({banned:!user.banned}).eq('id', userId);
+    if(!error){ await fetchUsers(); renderUsers(); toast(user.name+(user.banned?' aktifleştirildi. ✅':' yasaklandı. 🚫')); }
+    else toast('İşlem başarısız: '+error.message);
+  }catch(e){ toast('Hata: '+e.message); }
 }
-
 function renderUserFilters(){
   const c = $('#user-filters'); if(!c) return;
   const filters = [
@@ -600,74 +655,92 @@ function renderUserFilters(){
     {id:'ogrenci', label:'Öğrenciler', icon:'fa-user-graduate'},
     {id:'ogretmen', label:'Öğretmenler', icon:'fa-chalkboard-user'},
     {id:'idare', label:'İdare', icon:'fa-building-columns'},
-    ...ALL_CLASSES.map(cl => ({id:cl, label:cl, icon:'fa-school'}))
+    ...ALL_CLASSES.map(cl=>({id:cl, label:cl, icon:'fa-school'}))
   ];
-  c.innerHTML = filters.map(f =>
-    `<button class="filter-chip ${state.userFilter===f.id?'aktif':''}" onclick="setUserFilter('${f.id}')"><i class="fa-solid ${f.icon}"></i> ${f.label}</button>`
-  ).join('');
+  c.innerHTML = filters.map(f=>`<button class="filter-chip ${state.userFilter===f.id?'aktif':''}" onclick="setUserFilter('${f.id}')"><i class="fa-solid ${f.icon}"></i> ${f.label}</button>`).join('');
 }
-function setUserFilter(id){
-  state.userFilter = id;
-  renderUserFilters();
-  renderUsers();
-}
-
+function setUserFilter(id){ state.userFilter=id; renderUserFilters(); renderUsers(); }
 function renderUsers(){
-  const container = $('#user-list'); if(!container) return;
+  const container=$('#user-list'); if(!container) return;
   let users = state.users;
-  if(state.userFilter !== 'all'){
-    if(state.userFilter === 'ogrenci') users = users.filter(u => u.role === 'ogrenci');
-    else if(state.userFilter === 'ogretmen') users = users.filter(u => u.role === 'ogretmen');
-    else if(state.userFilter === 'idare') users = users.filter(u => u.role === 'idare');
-    else users = users.filter(u => u.role === 'ogrenci' && u.sinif === state.userFilter);
+  if(state.userFilter!=='all'){
+    if(state.userFilter==='ogrenci') users=users.filter(u=>u.role==='ogrenci');
+    else if(state.userFilter==='ogretmen') users=users.filter(u=>u.role==='ogretmen');
+    else if(state.userFilter==='idare') users=users.filter(u=>u.role==='idare');
+    else users=users.filter(u=>u.role==='ogrenci' && u.sinif===state.userFilter);
   }
-  users = [...users].sort((a,b) => new Date(b.last_seen||0) - new Date(a.last_seen||0));
-  container.innerHTML = users.length ? users.map(u => `
-    <div class="user-item ${u.banned ? 'banned' : ''}">
-      <div class="user-avatar">
-        ${u.avatar_url ? `<img src="${esc(u.avatar_url)}" alt="">` : `<div class="placeholder"><i class="fa-solid fa-user"></i></div>`}
-      </div>
+  users=[...users].sort((a,b)=>new Date(b.last_seen||0)-new Date(a.last_seen||0));
+  container.innerHTML = users.length ? users.map(u=>`
+    <div class="user-item ${u.banned?'banned':''}">
+      <div class="user-avatar">${u.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:`<div class="placeholder"><i class="fa-solid fa-user"></i></div>`}</div>
       <div class="user-info">
-        <div class="user-name">${esc(u.name)}${u.banned ? ' <span style="color:var(--kirmizi);font-size:.68rem">🚫 YASAKLI</span>' : ''}</div>
-        <div class="user-detail">${ROLE_LABEL[u.role]}${u.sinif ? ' · '+u.sinif : ''}${u.brans ? ' · '+u.brans : ''}${u.unvan ? ' · '+u.unvan : ''}</div>
+        <div class="user-name">${esc(u.name)}${u.banned?' <span style="color:var(--kirmizi);font-size:.68rem">🚫 YASAKLI</span>':''}</div>
+        <div class="user-detail">${ROLE_LABEL[u.role]}${u.sinif?' · '+u.sinif:''}${u.brans?' · '+u.brans:''}${u.unvan?' · '+u.unvan:''}</div>
         <div class="user-lastseen">Son görülme: ${fmtDateTime(u.last_seen)}</div>
       </div>
-      <button class="ban-btn ${u.banned ? 'unban' : ''}" onclick="toggleBan('${u.id}')">
-        <i class="fa-solid ${u.banned ? 'fa-check' : 'fa-ban'}"></i>
-        ${u.banned ? 'Aktifleştir' : 'Yasakla'}
-      </button>
-    </div>
-  `).join('') : bosMesaj('fa-users-slash','Kullanıcı bulunamadı.');
+      <button class="ban-btn ${u.banned?'unban':''}" onclick="toggleBan('${u.id}')"><i class="fa-solid ${u.banned?'fa-check':'fa-ban'}"></i> ${u.banned?'Aktifleştir':'Yasakla'}</button>
+    </div>`).join('') : bosMesaj('fa-users-slash','Kullanıcı bulunamadı.');
+}
+
+/* ═══════════ OKUNDU / GİZLE TERCİHLERİ ═══════════ */
+function userKey(){ return (state.session?.role||'?')+':'+(state.session?.name||'?'); }
+function loadLocalPrefs(){
+  try{ const all=JSON.parse(localStorage.getItem(PREFS_KEY))||{}; return all[userKey()]||{reads:[],hidden:[]}; }
+  catch(e){ return {reads:[],hidden:[]}; }
+}
+function saveLocalPrefs(){
+  try{
+    const all=JSON.parse(localStorage.getItem(PREFS_KEY))||{};
+    all[userKey()]={reads:[...state.readSet], hidden:[...state.hiddenSet]};
+    localStorage.setItem(PREFS_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+async function fetchUserPrefs(){
+  const local=loadLocalPrefs();
+  state.readSet=new Set(local.reads);
+  state.hiddenSet=new Set(local.hidden);
+  if(sb){
+    try{
+      const key=userKey();
+      const {data:reads} = await sb.from('read_receipts').select('post_id').eq('user_key',key);
+      if(reads) reads.forEach(r=>state.readSet.add(r.post_id));
+      const {data:hid} = await sb.from('hidden_posts').select('post_id').eq('user_key',key);
+      if(hid) hid.forEach(h=>state.hiddenSet.add(h.post_id));
+    }catch(e){ console.warn('fetchUserPrefs', e); }
+  }
+}
+async function markRead(postId){
+  if(state.readSet.has(postId)) return;
+  state.readSet.add(postId);
+  saveLocalPrefs();
+  if(sb){ try{ await sb.from('read_receipts').upsert({user_key:userKey(), post_id:postId},{onConflict:'user_key,post_id'}); }catch(e){} }
+  renderAll();
+}
+async function hidePost(postId){
+  if(!confirm('Bu duyuru sizden gizlensin mi? Diğer kullanıcılar görmeye devam eder.')) return;
+  state.hiddenSet.add(postId);
+  saveLocalPrefs();
+  if(sb){ try{ await sb.from('hidden_posts').upsert({user_key:userKey(), post_id:postId},{onConflict:'user_key,post_id'}); }catch(e){} }
+  toast('Duyuru sizden gizlendi; diğer kullanıcılar görmeye devam eder.');
+  renderAll();
 }
 
 /* ═══════════ AVATAR ═══════════ */
 function renderAvatarUpload(){
-  const wrap = $('#avatar-wrap'); if(!wrap) return;
-  const s = state.session;
-  wrap.innerHTML = `
-    ${s.avatar_url ? `<img src="${esc(s.avatar_url)}" alt="Profil">` : `<div class="avatar-placeholder"><i class="fa-solid fa-user"></i></div>`}
-    <label class="avatar-upload" title="Profil resmi yükle">
-      <i class="fa-solid fa-camera"></i>
-      <input type="file" accept="image/*" onchange="handleAvatarUpload(this.files[0])">
-    </label>
-  `;
+  const wrap=$('#avatar-wrap'); if(!wrap) return;
+  const s=state.session;
+  wrap.innerHTML = `${s.avatar_url?`<img src="${esc(s.avatar_url)}" alt="Profil">`:`<div class="avatar-placeholder"><i class="fa-solid fa-user"></i></div>`}
+    <label class="avatar-upload" title="Profil resmi yükle"><i class="fa-solid fa-camera"></i><input type="file" accept="image/*" onchange="handleAvatarUpload(this.files[0])"></label>`;
 }
 async function handleAvatarUpload(file){
   if(!file) return;
-  if(file.size > 2*1024*1024){ toast('Avatar en fazla 2 MB olabilir.'); return; }
+  if(file.size>2*1024*1024){ toast('Avatar en fazla 2 MB olabilir.'); return; }
   if(!file.type.startsWith('image/')){ toast('Sadece görsel dosyası yükleyebilirsiniz.'); return; }
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const dataUrl = e.target.result;
-    state.session.avatar_url = dataUrl;
-    saveSession(state.session);
-    renderAvatarUpload();
-    if(sb){
-      try{
-        await sb.from('users').update({avatar_url: dataUrl})
-          .eq('name', state.session.name).eq('role', state.session.role);
-      }catch(e){ console.warn('avatar upload:', e); }
-    }
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const dataUrl=e.target.result;
+    state.session.avatar_url=dataUrl; saveSession(state.session); renderAvatarUpload();
+    if(sb){ try{ await sb.from('users').update({avatar_url:dataUrl}).eq('name',state.session.name).eq('role',state.session.role); }catch(e){} }
     toast('Profil resmi güncellendi! 📸');
   };
   reader.readAsDataURL(file);
@@ -675,130 +748,104 @@ async function handleAvatarUpload(file){
 
 /* ═══════════ YAKLAŞAN ETKİNLİKLER ═══════════ */
 function getUpcomingDeadlines(){
-  const now = new Date(); now.setHours(0,0,0,0);
-  const limit = new Date(now); limit.setDate(limit.getDate() + 3);
-  return state.posts.filter(p => {
-    if(p.type !== 'odev' || !p.deadline) return false;
-    if(state.session?.role === 'ogrenci' && !ogrenciGorur(p)) return false;
-    const d = new Date(p.deadline + 'T00:00:00');
-    return d >= now && d <= limit;
-  }).sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+  const now=new Date(); now.setHours(0,0,0,0);
+  const limit=new Date(now); limit.setDate(limit.getDate()+3);
+  return state.posts.filter(p=>{
+    if(p.type!=='odev'||!p.deadline) return false;
+    if(state.session?.role==='ogrenci' && !ogrenciGorur(p)) return false;
+    const d=new Date(p.deadline+'T00:00:00');
+    return d>=now && d<=limit;
+  }).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
 }
 function renderUpcomingAlerts(containerId){
-  const container = $('#'+containerId); if(!container) return;
-  const upcoming = getUpcomingDeadlines();
-  if(!upcoming.length){ container.innerHTML = ''; return; }
-  const now = new Date(); now.setHours(0,0,0,0);
-  container.innerHTML = `
-    <div class="alert-box">
-      <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Yaklaşan Son Teslim Tarihleri</div>
-      ${upcoming.map(p => {
-        const d = new Date(p.deadline + 'T00:00:00');
-        const diff = Math.ceil((d - now) / 86400000);
-        const label = diff === 0 ? 'BUGÜN!' : diff === 1 ? 'Yarın' : diff + ' gün kaldı';
-        return `<div class="alert-item">
-          <i class="fa-solid fa-book"></i>
-          <span>${esc(p.title || 'Ödev')}</span>
-          <span class="alert-badge ${diff <= 1 ? 'urgent' : ''}">${label}</span>
-        </div>`;
-      }).join('')}
-    </div>
-  `;
+  const container=$('#'+containerId); if(!container) return;
+  const upcoming=getUpcomingDeadlines();
+  if(!upcoming.length){ container.innerHTML=''; return; }
+  const now=new Date(); now.setHours(0,0,0,0);
+  container.innerHTML=`<div class="alert-box"><div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Yaklaşan Son Teslim Tarihleri</div>
+    ${upcoming.map(p=>{
+      const d=new Date(p.deadline+'T00:00:00');
+      const diff=Math.ceil((d-now)/86400000);
+      const label=diff===0?'BUGÜN!':diff===1?'Yarın':diff+' gün kaldı';
+      return `<div class="alert-item"><i class="fa-solid fa-book"></i><span>${esc(p.title||'Ödev')}</span><span class="alert-badge ${diff<=1?'urgent':''}">${label}</span></div>`;
+    }).join('')}</div>`;
 }
 
 /* ═══════════ DERS PROGRAMI ═══════════ */
 function getProgramForClass(sinif){
-  return enYeni(state.posts.filter(p =>
-    p.type === 'program' && (p.target_classes||[]).includes(sinif)
-  ))[0] || null;
+  return enYeni(state.posts.filter(p=>p.type==='program' && (p.target_classes||[]).includes(sinif)))[0]||null;
 }
 function renderStudentProgram(){
-  const container = $('#student-program'); if(!container) return;
-  const program = getProgramForClass(state.session.sinif);
-  if(!program){
-    container.innerHTML = bosMesaj('fa-calendar-xmark','Henüz ders programı eklenmedi.');
-    return;
-  }
-  container.innerHTML = postCard(program, {om: orderMap()});
+  const container=$('#student-program'); if(!container) return;
+  const program=getProgramForClass(state.session.sinif);
+  container.innerHTML = program ? postCard(program,{om:orderMap()}) : bosMesaj('fa-calendar-xmark','Henüz ders programı eklenmedi.');
 }
 async function adminUploadProgram(){
-  const btn = $('#p-yayinla');
+  const btn=$('#p-yayinla');
   try{
-    const sinif = $('#p-sinif').value;
+    const sinif=$('#p-sinif').value;
     if(!sinif){ toast('Şube seçiniz.'); return; }
     if(!fileState['p-file']){ toast('Ders programı görseli veya PDF yükleyiniz.'); return; }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor…';
-    const medya = await medyaHazirla('p-file');
-    await insertPost({
-      type: 'program', title: sinif + ' Ders Programı', body: '',
-      deadline: null, all_school: false, target_classes: [sinif],
-      ...medya, author_name: state.session.name, author_role: 'idare'
-    });
-    fileTemizle('p-file', 'p-file-prev');
-    $('#p-sinif').value = '';
-    toast(sinif + ' ders programı güncellendi! 📅');
-    renderAll();
-  }catch(e){
-    console.error('adminUploadProgram:', e);
-    toast('Ders programı hatası: ' + e.message);
-  }finally{
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Ders Programını Yükle';
-  }
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor…';
+    const medya=await medyaHazirla('p-file');
+    await insertPost({type:'program', title:sinif+' Ders Programı', body:'', deadline:null, all_school:false, target_classes:[sinif], ...medya, author_name:state.session.name, author_role:'idare'});
+    fileTemizle('p-file','p-file-prev'); $('#p-sinif').value='';
+    toast(sinif+' ders programı güncellendi! 📅'); renderAll();
+  }catch(e){ toast('Ders programı hatası: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-calendar-days"></i> Ders Programını Yükle'; }
 }
 function renderAdminPrograms(){
-  const container = $('#admin-program-list'); if(!container) return;
-  const programs = enYeni(state.posts.filter(p => p.type === 'program'));
-  container.innerHTML = programs.length
-    ? programs.map(p => postCard(p, {om: orderMap(), canDelete:true})).join('')
-    : bosMesaj('fa-calendar-xmark','Henüz ders programı yüklenmedi.');
+  const container=$('#admin-program-list'); if(!container) return;
+  const programs=enYeni(state.posts.filter(p=>p.type==='program'));
+  container.innerHTML = programs.length ? programs.map(p=>postCard(p,{om:orderMap(),canDelete:true})).join('') : bosMesaj('fa-calendar-xmark','Henüz ders programı yüklenmedi.');
 }
 
 /* ═══════════ POSTS ═══════════ */
 async function fetchPosts(){
   try{
     if(sb){
-      const {data, error} = await sb.from('posts').select('*').order('created_at',{ascending:false});
-      if(!error && data){ state.posts = data; yerelYedekle(); durumGuncelle(); return; }
+      const {data, error}=await sb.from('posts').select('*').order('created_at',{ascending:false});
+      if(!error && data){ state.posts=data; yerelYedekle(); durumGuncelle(); return; }
       console.warn('Supabase fetch hatası:', error);
     }
   }catch(e){ console.warn('fetchPosts exception:', e); }
-  if(state.posts.length===0) state.posts = yerelYukle();
+  if(state.posts.length===0) state.posts=yerelYukle();
   durumGuncelle();
 }
 async function insertPost(p){
   try{
     if(sb){
-      const {error} = await sb.from('posts').insert(p);
+      const {error}=await sb.from('posts').insert(p);
       if(!error){ await fetchPosts(); renderAll(); return true; }
       console.warn('Supabase insert hatası:', error);
       toast('Bulut kaydı başarısız — yerel moda alındı.');
     }
-  }catch(e){ console.warn('insertPost exception:', e); toast('Kayıt hatası, yerel moda alındı.'); }
-  p.id = 'lcl-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
-  p.created_at = new Date().toISOString();
+  }catch(e){ toast('Kayıt hatası, yerel moda alındı.'); }
+  p.id='lcl-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+  p.created_at=new Date().toISOString();
   state.posts.unshift(p); yerelYedekle(); renderAll();
   return true;
 }
 async function deletePost(id){
-  const num = orderMap().get(id) || '?';
+  const num=orderMap().get(id)||'?';
   if(!confirm('#'+num+' numaralı paylaşım kalıcı olarak silinecek. Emin misiniz?')) return;
   try{
     if(sb && !String(id).startsWith('lcl-')){
-      const {error} = await sb.from('posts').delete().eq('id', id);
+      const {error}=await sb.from('posts').delete().eq('id', id);
       if(!error){ await fetchPosts(); renderAll(); toast('✅ Paylaşım silindi.'); return; }
-      toast('❌ Silme başarısız: '+ (error.message||'yetki hatası'));
-      return;
+      toast('❌ Silme başarısız: '+(error.message||'yetki hatası')); return;
     }
   }catch(e){ toast('❌ Silme sırasında hata oluştu.'); return; }
-  state.posts = state.posts.filter(p=>p.id!==id); yerelYedekle(); renderAll(); toast('✅ Paylaşım silindi.');
+  state.posts=state.posts.filter(p=>p.id!==id); yerelYedekle(); renderAll(); toast('✅ Paylaşım silindi.');
 }
 function initRealtime(){
   if(!sb) return;
   try{
     sb.channel('posts_changes')
-      .on('postgres_changes', {event:'*', schema:'public', table:'posts'}, ()=>{ fetchPosts().then(renderAll); })
+      .on('postgres_changes', {event:'*', schema:'public', table:'posts'}, (payload)=>{
+        if(payload.eventType==='INSERT' && appReadyForNotify) maybeNotify(payload.new);
+        fetchPosts().then(renderAll);
+      })
       .subscribe();
     sb.channel('users_changes')
       .on('postgres_changes', {event:'*', schema:'public', table:'users'}, ()=>{ fetchUsers().then(renderUsers); })
@@ -808,8 +855,8 @@ function initRealtime(){
 async function uploadToStorage(file){
   if(!sb) return null;
   try{
-    const path = Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-    const {error} = await sb.storage.from('media').upload(path, file, {upsert:true, contentType:file.type});
+    const path=Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const {error}=await sb.storage.from('media').upload(path, file, {upsert:true, contentType:file.type});
     if(error){ console.warn('Storage upload hatası:', error); return null; }
     return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
   }catch(e){ return null; }
@@ -819,24 +866,24 @@ function saveSession(s){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(s
 function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; } }
 
 function ogrenciGiris(){
-  const ad = $('#g-ad').value.trim();
-  if(ad.length<2){ toast('Lütfen adını veya lakabını yaz.'); return; }
+  const ad=cleanText($('#g-ad').value);
+  if(ad.length<2){ toast('Lütfen geçerli bir ad yaz.'); return; }
   saveSession({role:'ogrenci', name:ad, sinif:$('#g-sinif').value});
-  boot(); toast('Hoş geldin '+ad+'! 🎓');
+  requestNotifPermission(); boot(); toast('Hoş geldin '+ad+'! 🎓');
 }
 function ogretmenGiris(){
   if($('#o-sifre').value !== OGRETMEN_SIFRE){ toast('Hatalı öğretmen şifresi.'); return; }
-  const ad = $('#o-ad').value.trim();
+  const ad=cleanText($('#o-ad').value);
   if(ad.length<3){ toast('Lütfen ad-soyad giriniz.'); return; }
   saveSession({role:'ogretmen', name:ad, brans:$('#o-brans').value});
-  modalKapat('modal-ogretmen'); boot(); toast('Hoş geldiniz '+ad+' Öğretmenim. 📚');
+  modalKapat('modal-ogretmen'); requestNotifPermission(); boot(); toast('Hoş geldiniz '+ad+' Öğretmenim. 📚');
 }
 function idareGiris(){
   if($('#i-sifre').value !== IDARE_SIFRE){ toast('Hatalı idare şifresi.'); return; }
-  const ad = $('#i-ad').value.trim();
+  const ad=cleanText($('#i-ad').value);
   if(ad.length<3){ toast('Lütfen ad-soyad giriniz.'); return; }
   saveSession({role:'idare', name:ad, unvan:$('#i-unvan').value});
-  modalKapat('modal-idare'); boot(); toast('Hoş geldiniz '+ad+'. 🏛');
+  modalKapat('modal-idare'); requestNotifPermission(); boot(); toast('Hoş geldiniz '+ad+'. 🏛');
 }
 function cikYap(){
   if(!confirm('Oturum kapatılsın mı?')) return;
@@ -851,77 +898,81 @@ function profilSifirla(){
 }
 
 function buildNav(){
-  const nav = $('#bottom-nav'); if(!nav) return;
-  nav.innerHTML = NAVS[state.session.role].map(t =>
-    `<button class="nav-item" data-tab="${t.id}" onclick="tabSec('${t.id}')"><i class="fa-solid ${t.icon}"></i><span>${t.label}</span></button>`
-  ).join('');
+  const nav=$('#bottom-nav'); if(!nav) return;
+  nav.innerHTML=NAVS[state.session.role].map(t=>`<button class="nav-item" data-tab="${t.id}" onclick="tabSec('${t.id}')"><i class="fa-solid ${t.icon}"></i><span>${t.label}</span></button>`).join('');
   tabSec(NAVS[state.session.role][0].id);
 }
 function tabSec(id){
-  state.aktifTab = id;
-  $$('main > section').forEach(s => s.classList.toggle('hidden', s.dataset.tab !== id));
-  $$('.nav-item').forEach(b => b.classList.toggle('aktif', b.dataset.tab === id));
+  state.aktifTab=id;
+  $$('main > section').forEach(s=>s.classList.toggle('hidden', s.dataset.tab!==id));
+  $$('.nav-item').forEach(b=>b.classList.toggle('aktif', b.dataset.tab===id));
   window.scrollTo({top:0, behavior:'smooth'});
   renderAll();
 }
 
 function profilSeridi(){
-  const s = state.session; if(!s) return;
-  const detay = s.role==='ogrenci' ? s.sinif : (s.role==='ogretmen' ? s.brans : s.unvan);
-  let sagBtn = '';
-  if(s.role==='ogrenci'){
-    sagBtn = `<button class="mini-link" onclick="profilSifirla()"><i class="fa-solid fa-rotate-left"></i> Profil Sıfırla</button>`;
-  } else {
-    sagBtn = `<button class="mini-link" onclick="cikYap()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap</button>`;
-  }
-  $('#profile-strip').innerHTML =
-    `<div class="avatar-wrap" id="avatar-wrap"></div>
-     <span class="who">${esc(s.name)}</span>
-     <span class="chip chip-gri">${ROLE_LABEL[s.role]} · ${esc(detay)}</span>
-     <span class="strip-right"><span class="status-dot" id="durum-dot"></span>${sagBtn}</span>`;
+  const s=state.session; if(!s) return;
+  const detay=s.role==='ogrenci'?s.sinif:(s.role==='ogretmen'?s.brans:s.unvan);
+  const sagBtn = s.role==='ogrenci'
+    ? `<button class="mini-link" onclick="profilSifirla()"><i class="fa-solid fa-rotate-left"></i> Profil Sıfırla</button>`
+    : `<button class="mini-link" onclick="cikYap()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap</button>`;
+  $('#profile-strip').innerHTML=`<div class="avatar-wrap" id="avatar-wrap"></div>
+    <span class="who">${esc(s.name)}</span>
+    <span class="chip chip-gri">${ROLE_LABEL[s.role]} · ${esc(detay)}</span>
+    <span class="strip-right"><span class="status-dot" id="durum-dot"></span>${sagBtn}</span>`;
   renderAvatarUpload();
   $('#quick-logins')?.classList.toggle('hidden', true);
   durumGuncelle();
 }
 
-function siraliEski(){ return [...state.posts].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at)); }
-function orderMap(){ const m=new Map(); siraliEski().forEach((p,i)=>m.set(p.id, i+1)); return m; }
-const enYeni = arr => [...arr].sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+function siraliEski(){ return [...state.posts].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); }
+function orderMap(){ const m=new Map(); siraliEski().forEach((p,i)=>m.set(p.id,i+1)); return m; }
+const enYeni = arr => [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 function ogrenciGorur(p){ return p.all_school || (p.target_classes||[]).includes(state.session.sinif); }
-const kendiPostlarim = () => state.posts.filter(p => p.author_name===state.session.name && p.author_role===state.session.role);
+function ogretmenGorur(p){ return p.all_school || (p.target_classes||[]).includes(OGRETMEN_KEY); }
+function studentVisible(p){ if(p.all_school) return true; return (p.target_classes||[]).some(c=>ALL_CLASSES.includes(c)); }
+const kendiPostlarim = () => state.posts.filter(p=>p.author_name===state.session.name && p.author_role===state.session.role);
 
 function deadlineChip(p){
-  if(p.type!=='odev' || !p.deadline) return '';
+  if(p.type!=='odev'||!p.deadline) return '';
   const today=new Date(); today.setHours(0,0,0,0);
   const d=new Date(p.deadline+'T00:00:00');
   const diff=Math.round((d-today)/86400000);
-  if(diff<0)  return `<span class="chip chip-kirmizi"><i class="fa-solid fa-hourglass-end"></i> Süresi doldu</span>`;
-  if(diff===0)return `<span class="chip chip-altin"><i class="fa-solid fa-fire"></i> Bugün son gün!</span>`;
+  if(diff<0) return `<span class="chip chip-kirmizi"><i class="fa-solid fa-hourglass-end"></i> Süresi doldu</span>`;
+  if(diff===0) return `<span class="chip chip-altin"><i class="fa-solid fa-fire"></i> Bugün son gün!</span>`;
   return `<span class="chip chip-yesil"><i class="fa-solid fa-hourglass-half"></i> ${diff} gün kaldı</span>`;
 }
 
 function mediaHTML(p){
   if(!p.media_kind) return '';
-  const src = p.media_url || p.media_data;
-  if(!src) return '';
+  const src=p.media_url||p.media_data; if(!src) return '';
   if(p.media_kind==='image')
-    return `<img class="post-img" src="${esc(src)}" loading="lazy" alt="Paylaşım görseli" onclick="openLightbox('${esc(src)}')">`;
-  return `<button class="btn btn-ghost" style="margin-top:12px;padding:8px 14px;font-size:.8rem" onclick="openPdf('${p.id}')"><i class="fa-solid fa-file-pdf"></i> PDF Görüntüle</button>`;
+    return `<img class="post-img" src="${esc(src)}" loading="lazy" alt="Paylaşım görseli" onclick="event.stopPropagation();openLightboxById('${p.id}')">`;
+  return `<button class="btn btn-ghost" style="margin-top:12px;padding:8px 14px;font-size:.8rem" onclick="event.stopPropagation();openPdf('${p.id}')"><i class="fa-solid fa-file-pdf"></i> PDF Görüntüle</button>`;
 }
 
 function postCard(p, opts={}){
-  const om = opts.om || orderMap();
-  const num = om.get(p.id) || '•';
+  const om=opts.om||orderMap();
+  const num=om.get(p.id)||'•';
   const tip = p.type==='odev'   ? `<span class="chip chip-bordo"><i class="fa-solid fa-book"></i> Ödev</span>`
             : p.type==='yemek'  ? `<span class="chip chip-menu"><i class="fa-solid fa-utensils"></i> Menü</span>`
             : p.type==='program'? `<span class="chip chip-program"><i class="fa-solid fa-calendar-days"></i> Program</span>`
             :                     `<span class="chip chip-altin"><i class="fa-solid fa-bullhorn"></i> Duyuru</span>`;
-  const classes = p.all_school ? ['TÜM OKUL'] : (p.target_classes||[]);
-  const rolEtiket = p.author_role==='ogretmen' ? ' · Öğretmen' : p.author_role==='idare' ? ' · İdare' : '';
+  const classes=p.all_school?['TÜM OKUL']:(p.target_classes||[]);
+  const rolEtiket=p.author_role==='ogretmen'?' · Öğretmen':p.author_role==='idare'?' · İdare':'';
+  const showRead=!!opts.showRead;
+  const isRead=state.readSet.has(p.id);
+  const readBadge=showRead ? (isRead
+      ? `<span class="chip chip-gri"><i class="fa-solid fa-check-double"></i> Okundu</span>`
+      : `<span class="chip chip-unread"><i class="fa-solid fa-envelope"></i> Okunmadı</span>`) : '';
+  const unreadCls=(showRead && !isRead)?' unread':'';
+  const cardClick=showRead?` onclick="markRead('${p.id}')"`:'';
+  const hideBtn=opts.canHide?`<button class="del-btn hide-btn" onclick="event.stopPropagation();hidePost('${p.id}')"><i class="fa-solid fa-eye-slash"></i> Benden Gizle</button>`:'';
+  const delBtn=opts.canDelete?`<button class="del-btn" onclick="event.stopPropagation();deletePost('${p.id}')"><i class="fa-solid fa-trash-can"></i> Sil</button>`:'';
   return `
-  <article class="post-card">
+  <article class="post-card${unreadCls}"${cardClick}>
     <span class="order-badge">#${num}</span>
-    <div class="post-head">${tip}${deadlineChip(p)}<h3>${esc(p.title||'')}</h3></div>
+    <div class="post-head">${tip}${deadlineChip(p)}${readBadge}<h3>${esc(p.title||'')}</h3></div>
     <div class="post-meta">
       <span><i class="fa-solid fa-user-pen"></i> ${esc(p.author_name)}${rolEtiket}</span>
       <span><i class="fa-regular fa-calendar"></i> ${fmtTarih(p.created_at)}</span>
@@ -930,96 +981,121 @@ function postCard(p, opts={}){
     ${p.body?`<div class="post-body">${esc(p.body)}</div>`:''}
     ${mediaHTML(p)}
     <div class="post-foot">
-      <div class="class-tags">${classes.map(c=>`<span class="class-tag">${esc(c)}</span>`).join('')}</div>
-      ${opts.canDelete?`<button class="del-btn" onclick="deletePost('${p.id}')"><i class="fa-solid fa-trash-can"></i> Sil</button>`:''}
+      <div class="class-tags">${classes.map(c=>`<span class="class-tag">${esc(c===OGRETMEN_KEY?'ÖĞRETMENLER':c)}</span>`).join('')}</div>
+      ${hideBtn}${delBtn}
     </div>
   </article>`;
 }
-const bosMesaj = (ikon, metin) => `<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`;
+const bosMesaj=(ikon,metin)=>`<div class="bos"><i class="fa-solid ${ikon}"></i>${metin}</div>`;
+
+function renderConsumerAnnouncements(sel, posts){
+  const el=$(sel); if(!el) return;
+  const visible=posts.filter(p=>!state.hiddenSet.has(p.id));
+  if(!visible.length){ el.innerHTML=bosMesaj('fa-bullhorn-slash','Görüntülenecek duyuru yok.'); return; }
+  const om=orderMap();
+  el.innerHTML=visible.map(p=>postCard(p,{om, showRead:true, canHide:true})).join('');
+}
+function renderFeed(sel){
+  const el=$(sel); if(!el) return;
+  const items=enYeni(state.posts.filter(p=>(p.type==='odev'||p.type==='duyuru') && studentVisible(p)));
+  const visible=items.filter(p=>!(p.type==='duyuru' && state.hiddenSet.has(p.id)));
+  if(!visible.length){ el.innerHTML=bosMesaj('fa-inbox','Akışta içerik yok.'); return; }
+  const om=orderMap();
+  el.innerHTML=visible.map(p=> p.type==='duyuru' ? postCard(p,{om,showRead:true,canHide:true}) : postCard(p,{om})).join('');
+}
 
 function renderAll(){
-  const r = state.session?.role; if(!r) return;
-  const om = orderMap();
+  const r=state.session?.role; if(!r) return;
+  const om=orderMap();
   if(r==='ogrenci'){
-    const d = enYeni(state.posts.filter(p=>p.type==='duyuru' && ogrenciGorur(p)));
-    const o = enYeni(state.posts.filter(p=>p.type==='odev'   && ogrenciGorur(p)));
-    const dl = $('#ogr-duyuru-list'); if(dl) dl.innerHTML = d.length? d.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-bullhorn-slash','Henüz yayınlanmış duyuru yok.');
-    const ol = $('#ogr-odev-list'); if(ol) ol.innerHTML = o.length? o.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-mug-hot','Sınıfınıza özel ödev yok. ☕');
-    const hd = $('#hint-duyuru'); if(hd) hd.textContent = d.length? d.length+' duyuru':'';
-    const ho = $('#hint-odev'); if(ho) ho.textContent = o.length? o.length+' ödev':'';
+    const d=enYeni(state.posts.filter(p=>p.type==='duyuru' && ogrenciGorur(p)));
+    const o=enYeni(state.posts.filter(p=>p.type==='odev' && ogrenciGorur(p)));
+    renderConsumerAnnouncements('#ogr-duyuru-list', d);
+    const ol=$('#ogr-odev-list'); if(ol) ol.innerHTML=o.length?o.map(p=>postCard(p,{om})).join(''):bosMesaj('fa-mug-hot','Sınıfınıza özel ödev yok. ☕');
+    const hd=$('#hint-duyuru'); if(hd) hd.textContent=d.length?d.length+' duyuru':'';
+    const ho=$('#hint-odev'); if(ho) ho.textContent=o.length?o.length+' ödev':'';
     renderUpcomingAlerts('upcoming-alerts');
     renderUpcomingAlerts('upcoming-alerts-odev');
     renderStudentProgram();
-    renderMenu(om);
+    renderMenu('#ogr-menu-box');
     renderNotlar();
   }
   if(r==='ogretmen'){
-    const kendi = enYeni(kendiPostlarim());
-    const yl = $('#yayin-list'); if(yl) yl.innerHTML = kendi.length? kendi.map(p=>postCard(p,{om,canDelete:true})).join('') : bosMesaj('fa-inbox','Henüz paylaşım yayınlamadınız.');
-    const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
-    const al = $('#akis-list'); if(al) al.innerHTML = akis.length? akis.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+    const dt=enYeni(state.posts.filter(p=>p.type==='duyuru' && ogretmenGorur(p)));
+    renderConsumerAnnouncements('#t-duyuru-list', dt);
+    const ht=$('#hint-t-duyuru'); if(ht) ht.textContent=dt.length?dt.length+' duyuru':'';
+    renderMenu('#t-menu-box');
+    const kendi=enYeni(kendiPostlarim());
+    const yl=$('#yayin-list'); if(yl) yl.innerHTML=kendi.length?kendi.map(p=>postCard(p,{om,canDelete:true})).join(''):bosMesaj('fa-inbox','Henüz paylaşım yayınlamadınız.');
+    renderFeed('#akis-list');
   }
   if(r==='idare'){
-    const liste = state.superMode ? enYeni([...state.posts]) : enYeni(kendiPostlarim());
-    const yl = $('#yonetim-list'); if(yl) yl.innerHTML = liste.length? liste.map(p=>postCard(p,{om,canDelete:true})).join('')
-      : bosMesaj('fa-box-open', state.superMode?'Okulda hiç içerik yok.':'Henüz paylaşımınız yok. Süper İdare ile tümünü görüntüleyebilirsiniz.');
-    const akis = enYeni(state.posts.filter(p=>p.type!=='yemek'));
-    const al = $('#akis-list'); if(al) al.innerHTML = akis.length? akis.map(p=>postCard(p,{om})).join('') : bosMesaj('fa-inbox','Akışta içerik yok.');
+    const liste=state.superMode?enYeni([...state.posts]):enYeni(kendiPostlarim());
+    const yl=$('#yonetim-list'); if(yl) yl.innerHTML=liste.length?liste.map(p=>postCard(p,{om,canDelete:true})).join(''):bosMesaj('fa-box-open', state.superMode?'Okulda hiç içerik yok.':'Henüz paylaşımınız yok. Süper İdare ile tümünü görüntüleyebilirsiniz.');
+    renderFeed('#akis-list');
     renderAdminPrograms();
     renderUserFilters();
     renderUsers();
   }
 }
 
-function renderMenu(om){
-  const box = $('#ogr-menu-box'); if(!box) return;
-  const m = enYeni(state.posts.filter(p=>p.type==='yemek'))[0];
-  box.innerHTML = m ? postCard(m,{om: om||orderMap()}) : bosMesaj('fa-utensils','Menü eklenmedi.');
+function renderMenu(sel){
+  const box=$(sel); if(!box) return;
+  const m=enYeni(state.posts.filter(p=>p.type==='yemek'))[0];
+  box.innerHTML=m?postCard(m,{om:orderMap()}):bosMesaj('fa-utensils','Menü eklenmedi.');
 }
 function superToggle(){
-  state.superMode = !state.superMode;
-  const b = $('#super-btn'); if(!b) return;
+  state.superMode=!state.superMode;
+  const b=$('#super-btn'); if(!b) return;
   b.classList.toggle('aktif', state.superMode);
-  b.innerHTML = state.superMode
+  b.innerHTML=state.superMode
     ? '<i class="fa-solid fa-shield-halved"></i> Süper İdare AKTİF — Tüm okul içerikleri görünüyor'
     : '<i class="fa-solid fa-shield-halved"></i> Tüm Okul İçeriklerini Yönet (Süper İdare)';
   renderAll();
 }
 
-function buildClassGrid(containerId, prefix){
-  const c = $('#'+containerId); if(!c) return;
-  c.innerHTML =
-    `<label class="check-item full"><input type="checkbox" id="${prefix}-all" onchange="tumOkulDegisti('${prefix}')"><span><i class="fa-solid fa-school"></i> Tüm Okul</span></label>`
-    + ALL_CLASSES.map(cl=>`<label class="check-item"><input type="checkbox" class="${prefix}-box" value="${cl}" onchange="subeDegisti('${prefix}')"><span>${cl}</span></label>`).join('');
+function buildClassGrid(containerId, prefix, withTeachers=false){
+  const c=$('#'+containerId); if(!c) return;
+  let html=`<label class="check-item full"><input type="checkbox" id="${prefix}-all" onchange="tumOkulDegisti('${prefix}')"><span><i class="fa-solid fa-school"></i> Tüm Okul</span></label>`;
+  html+=ALL_CLASSES.map(cl=>`<label class="check-item"><input type="checkbox" class="${prefix}-box" value="${cl}" onchange="subeDegisti('${prefix}')"><span>${cl}</span></label>`).join('');
+  if(withTeachers){
+    html+=`<label class="check-item teach-item"><input type="checkbox" id="${prefix}-teachers" onchange="subeDegisti('${prefix}')"><span><i class="fa-solid fa-chalkboard-user"></i> Öğretmenler</span></label>`;
+  }
+  c.innerHTML=html;
 }
 function tumOkulDegisti(prefix){
-  const master = $('#'+prefix+'-all'); if(!master) return;
-  $$('.'+prefix+'-box').forEach(b=>{ b.checked = master.checked; b.disabled = master.checked; });
+  const master=$('#'+prefix+'-all'); if(!master) return;
+  $$('.'+prefix+'-box').forEach(b=>{b.checked=master.checked;b.disabled=master.checked;});
+  const t=$('#'+prefix+'-teachers'); if(t){ t.checked=master.checked; t.disabled=master.checked; }
 }
 function subeDegisti(prefix){
-  const hepsi = $$('.'+prefix+'-box').every(b=>b.checked);
-  const master = $('#'+prefix+'-all');
-  if(master && hepsi){ master.checked = true; tumOkulDegisti(prefix); }
+  const master=$('#'+prefix+'-all'); if(!master) return;
+  if(master.checked) return;
+  const boxes=$$('.'+prefix+'-box');
+  const allBoxes=boxes.length>0 && boxes.every(b=>b.checked);
+  const t=$('#'+prefix+'-teachers');
+  const tOk=!t || t.checked;
+  if(allBoxes && tOk){ master.checked=true; tumOkulDegisti(prefix); }
 }
 function seciliSiniflar(prefix){
-  const master = $('#'+prefix+'-all');
-  if(master && master.checked) return {all:true, classes:[...ALL_CLASSES]};
-  return {all:false, classes:$$('.'+prefix+'-box:checked').map(b=>b.value)};
+  const master=$('#'+prefix+'-all');
+  const t=$('#'+prefix+'-teachers');
+  if(master && master.checked) return {all:true, classes:[...ALL_CLASSES], teachers:true};
+  return {all:false, classes:$$('.'+prefix+'-box:checked').map(b=>b.value), teachers:!!(t && t.checked)};
 }
 
 function bindFile(inputId, prevId){
-  const inp = document.getElementById(inputId); if(!inp) return;
+  const inp=document.getElementById(inputId); if(!inp) return;
   inp.addEventListener('change', ()=>{
-    const f = inp.files[0];
-    const prev = $('#'+prevId);
+    const f=inp.files[0]; const prev=$('#'+prevId);
     if(!f){ delete fileState[inputId]; if(prev) prev.innerHTML=''; return; }
-    if(f.size > 8*1024*1024){ toast('Dosya en fazla 8 MB olabilir.'); inp.value=''; return; }
-    const kind = f.type==='application/pdf' ? 'pdf' : f.type.startsWith('image/') ? 'image' : null;
+    if(f.size>8*1024*1024){ toast('Dosya en fazla 8 MB olabilir.'); inp.value=''; return; }
+    const kind=f.type==='application/pdf'?'pdf':f.type.startsWith('image/')?'image':null;
     if(!kind){ toast('Sadece görsel veya PDF yükleyebilirsiniz.'); inp.value=''; return; }
-    const reader = new FileReader();
-    reader.onload = e=>{
-      fileState[inputId] = {kind, dataUrl:e.target.result, file:f};
-      if(prev) prev.innerHTML = `<span class="file-chip"><i class="fa-solid ${kind==='pdf'?'fa-file-pdf':'fa-image'}"></i> ${esc(f.name)} <button type="button" onclick="fileTemizle('${inputId}','${prevId}')">✕</button></span>`;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      fileState[inputId]={kind, dataUrl:e.target.result, file:f};
+      if(prev) prev.innerHTML=`<span class="file-chip"><i class="fa-solid ${kind==='pdf'?'fa-file-pdf':'fa-image'}"></i> ${esc(f.name)} <button type="button" onclick="fileTemizle('${inputId}','${prevId}')">✕</button></span>`;
     };
     reader.readAsDataURL(f);
   });
@@ -1030,34 +1106,36 @@ function fileTemizle(inputId, prevId){
   const prev=$('#'+prevId); if(prev) prev.innerHTML='';
 }
 async function medyaHazirla(inputId){
-  const f = fileState[inputId];
+  const f=fileState[inputId];
   if(!f) return {media_kind:null, media_url:null, media_data:null};
-  const url = await uploadToStorage(f.file);
-  return url
-    ? {media_kind:f.kind, media_url:url, media_data:null}
-    : {media_kind:f.kind, media_url:null, media_data:f.dataUrl};
+  const url=await uploadToStorage(f.file);
+  return url ? {media_kind:f.kind, media_url:url, media_data:null}
+             : {media_kind:f.kind, media_url:null, media_data:f.dataUrl};
 }
 function formTemizle(ids, prefix){
   ids.forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
-  const master = $('#'+prefix+'-all');
+  const master=$('#'+prefix+'-all');
   if(master){ master.checked=false; tumOkulDegisti(prefix); }
+}
+function hedefDerle(secim){
+  let target = secim.all ? [...ALL_CLASSES] : [...secim.classes];
+  if(!secim.all && secim.teachers) target.push(OGRETMEN_KEY);
+  return target;
 }
 
 async function ogretmenYayinla(){
-  const btn = $('#t-yayinla');
+  const btn=$('#t-yayinla');
   try{
-    const tur = document.querySelector('input[name="t-tur"]:checked')?.value || 'odev';
-    const konu = $('#t-konu').value.trim(), metin = $('#t-metin').value.trim();
+    const tur=document.querySelector('input[name="t-tur"]:checked')?.value||'odev';
+    const konu=cleanText($('#t-konu').value), metin=cleanText($('#t-metin').value);
     if(!konu){ toast('Ders/konu adı gerekli.'); return; }
-    const hedef = seciliSiniflar('t');
-    if(!hedef.all && hedef.classes.length===0){ toast('En az bir şube seçmelisiniz.'); return; }
+    const secim=seciliSiniflar('t');
+    if(!secim.all && secim.classes.length===0){ toast('En az bir şube seçmelisiniz.'); return; }
     btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
-    const medya = await medyaHazirla('t-file');
-    await insertPost({
-      type:tur, title:konu, body:metin, deadline:$('#t-tarih').value||null,
-      all_school:hedef.all, target_classes:hedef.classes, ...medya,
-      author_name:state.session.name, author_role:'ogretmen'
-    });
+    const medya=await medyaHazirla('t-file');
+    await insertPost({type:tur, title:konu, body:metin, deadline:$('#t-tarih').value||null,
+      all_school:secim.all, target_classes:hedefDerle(secim), ...medya,
+      author_name:state.session.name, author_role:'ogretmen'});
     formTemizle(['t-konu','t-metin','t-tarih'],'t'); fileTemizle('t-file','t-file-prev');
     toast(tur==='odev'?'Ödev canlıya yayınlandı! ✅':'Duyuru canlıya yayınlandı! ✅');
     tabSec('yayinlarim');
@@ -1065,69 +1143,69 @@ async function ogretmenYayinla(){
   finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-tower-broadcast"></i> Canlıya Yayınla'; }
 }
 async function idareDuyuruYayinla(){
-  const btn = $('#a-yayinla');
+  const btn=$('#a-yayinla');
   try{
-    const baslik=$('#a-baslik').value.trim(), metin=$('#a-metin').value.trim();
+    const baslik=cleanText($('#a-baslik').value), metin=cleanText($('#a-metin').value);
     if(!baslik && !metin){ toast('Duyuru başlığı veya metni giriniz.'); return; }
-    const hedef = seciliSiniflar('a');
-    if(!hedef.all && hedef.classes.length===0){ toast('Hedef sınıf seçiniz (veya "Tüm Okul" işaretleyin).'); return; }
+    const secim=seciliSiniflar('a');
+    if(!secim.all && secim.classes.length===0 && !secim.teachers){ toast('Hedef seçiniz: sınıf, öğretmen veya Tüm Okul.'); return; }
     btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Yayınlanıyor…';
-    const medya = await medyaHazirla('a-file');
-    await insertPost({
-      type:'duyuru', title:baslik, body:metin, deadline:null,
-      all_school:hedef.all, target_classes:hedef.classes, ...medya,
-      author_name:state.session.name, author_role:'idare'
-    });
+    const medya=await medyaHazirla('a-file');
+    await insertPost({type:'duyuru', title:baslik, body:metin, deadline:null,
+      all_school:secim.all, target_classes:hedefDerle(secim), ...medya,
+      author_name:state.session.name, author_role:'idare'});
     formTemizle(['a-baslik','a-metin'],'a'); fileTemizle('a-file','a-file-prev');
-    toast('İdare duyurusu yayınlandı! 📣');
+    toast(secim.teachers && !secim.all ? 'Duyuru öğretmenlere yayınlandı! 📣' : 'İdare duyurusu yayınlandı! 📣');
     tabSec('yonetim');
   }catch(e){ toast('Duyuru hatası: '+e.message); }
   finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-bullhorn"></i> Duyuruyu Yayınla'; }
 }
 async function menuGuncelle(){
-  const btn = $('#m-yayinla');
+  const btn=$('#m-yayinla');
   try{
-    const metin=$('#m-metin').value.trim();
+    const metin=cleanText($('#m-metin').value);
     if(!metin && !fileState['m-file']){ toast('Menü metni veya dosyası giriniz.'); return; }
     btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Güncelleniyor…';
-    const medya = await medyaHazirla('m-file');
-    await insertPost({
-      type:'yemek', title:'Günün Yemek Menüsü', body:metin, deadline:null,
+    const medya=await medyaHazirla('m-file');
+    await insertPost({type:'yemek', title:'Günün Yemek Menüsü', body:metin, deadline:null,
       all_school:true, target_classes:[...ALL_CLASSES], ...medya,
-      author_name:state.session.name, author_role:'idare'
-    });
+      author_name:state.session.name, author_role:'idare'});
     $('#m-metin').value=''; fileTemizle('m-file','m-file-prev');
-    toast('Yemek menüsü güncellendi! 🍽');
-    renderAll();
+    toast('Yemek menüsü güncellendi! 🍽'); renderAll();
   }catch(e){ toast('Menü hatası: '+e.message); }
   finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-utensils"></i> Menüyü Güncelle'; }
 }
 
-function openLightbox(src){ const lb=$('#lightbox'); const im=$('#lightbox-img'); if(lb&&im){ im.src=src; lb.classList.remove('hidden'); } }
+function openLightboxById(id){
+  const p=state.posts.find(x=>x.id===id); if(!p) return;
+  const src=p.media_url||p.media_data; if(!src) return;
+  const lb=$('#lightbox'); const im=$('#lightbox-img');
+  if(lb&&im){ im.src=src; lb.classList.remove('hidden'); }
+}
 function lightboxKapat(){ $('#lightbox')?.classList.add('hidden'); }
 function dataUrlToBlob(dataUrl){
-  const [meta, b64] = dataUrl.split(',');
-  const mime = (meta.match(/data:(.*?)(;|$)/)||[,'application/pdf'])[1];
-  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  const [meta,b64]=dataUrl.split(',');
+  const mime=(meta.match(/data:(.*?)(;|$)/)||[,'application/pdf'])[1];
+  const bin=atob(b64), arr=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
   return new Blob([arr],{type:mime});
 }
 function openPdf(id){
-  const p = state.posts.find(x=>x.id===id); if(!p) return;
+  const p=state.posts.find(x=>x.id===id); if(!p) return;
   if(p.media_url){ window.open(p.media_url,'_blank'); return; }
   if(p.media_data){
-    const url = URL.createObjectURL(dataUrlToBlob(p.media_data));
+    const url=URL.createObjectURL(dataUrlToBlob(p.media_data));
     window.open(url,'_blank');
-    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
   }
 }
 
-function notlariYukle(){ try{ state.notlar = JSON.parse(localStorage.getItem(NOTLAR_KEY))||[]; }catch(e){ state.notlar=[]; } }
+function notlariYukle(){ try{ state.notlar=JSON.parse(localStorage.getItem(NOTLAR_KEY))||[]; }catch(e){ state.notlar=[]; } }
 function notlariKaydet(){ try{ localStorage.setItem(NOTLAR_KEY, JSON.stringify(state.notlar)); }catch(e){} }
 function notEkle(){
-  const ders=$('#n-ders').value.trim();
+  const ders=cleanText($('#n-ders').value);
   if(!ders){ toast('Ders adı yazmalısın.'); return; }
-  const v = id=>{ const n=parseFloat($('#'+id).value); return isNaN(n)?0:Math.min(100,Math.max(0,n)); };
+  const v=id=>{ const n=parseFloat($('#'+id).value); return isNaN(n)?0:Math.min(100,Math.max(0,n)); };
   state.notlar.push({ders, y1:v('n-y1'), y2:v('n-y2'), perf:v('n-perf')});
   notlariKaydet(); renderNotlar();
   $('#n-ders').value=''; ['n-y1','n-y2','n-perf'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
@@ -1136,20 +1214,20 @@ function notEkle(){
 function notSil(i){ state.notlar.splice(i,1); notlariKaydet(); renderNotlar(); }
 function renderNotlar(){
   const tb=$('#not-tbody'); if(!tb) return;
-  tb.innerHTML = state.notlar.length ? state.notlar.map((n,i)=>{
+  tb.innerHTML=state.notlar.length ? state.notlar.map((n,i)=>{
     const ort=((n.y1+n.y2+n.perf)/3);
     return `<tr><td style="text-align:left;font-weight:700">${esc(n.ders)}</td><td>${n.y1}</td><td>${n.y2}</td><td>${n.perf}</td><td class="ort-cell">${ort.toFixed(2)}</td><td><button class="del-btn" style="margin:0;padding:4px 8px" onclick="notSil(${i})"><i class="fa-solid fa-trash-can"></i></button></td></tr>`;
   }).join('') : `<tr><td colspan="6" style="color:var(--soluk);padding:16px">Henüz not eklenmedi.</td></tr>`;
-  const genel = state.notlar.length ? state.notlar.reduce((a,n)=>a+(n.y1+n.y2+n.perf)/3,0)/state.notlar.length : 0;
-  const go=$('#genel-ort'); if(go) go.textContent = genel.toFixed(2);
+  const genel=state.notlar.length?state.notlar.reduce((a,n)=>a+(n.y1+n.y2+n.perf)/3,0)/state.notlar.length:0;
+  const go=$('#genel-ort'); if(go) go.textContent=genel.toFixed(2);
 }
 
-const POMO_SURE = 25*60;
-let pomo = {running:false, endAt:null, remaining:POMO_SURE, iv:null};
+const POMO_SURE=25*60;
+let pomo={running:false, endAt:null, remaining:POMO_SURE, iv:null};
 function pomoGoster(sn){
   const el=$('#pomo-time'); if(!el) return;
   const m=String(Math.floor(sn/60)).padStart(2,'0'), s=String(sn%60).padStart(2,'0');
-  el.textContent = m+':'+s;
+  el.textContent=m+':'+s;
 }
 function pomoStart(){
   if(pomo.running) return;
@@ -1184,20 +1262,21 @@ function beep(){
 }
 
 async function boot(){
-  state.session = loadSession();
+  state.session=loadSession();
   if(!state.session){
     $('#gate')?.classList.remove('hidden');
     $('#app')?.classList.add('hidden');
     $('#bottom-nav')?.classList.add('hidden');
     return;
   }
-  // Yasaklı mı kontrol et
   if(await checkBanned()){
     alert('Hesabınız idare tarafından askıya alınmıştır. Lütfen okul yönetimiyle iletişime geçin.');
     try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
-    location.reload();
-    return;
+    location.reload(); return;
   }
+  const local=loadLocalPrefs();
+  state.readSet=new Set(local.reads);
+  state.hiddenSet=new Set(local.hidden);
   $('#gate')?.classList.add('hidden');
   $('#app')?.classList.remove('hidden');
   $('#bottom-nav')?.classList.remove('hidden');
@@ -1209,24 +1288,23 @@ async function boot(){
 async function init(){
   try{
     initSupabase();
-    buildClassGrid('t-classes','t');
-    buildClassGrid('a-classes','a');
+    buildClassGrid('t-classes','t', false);
+    buildClassGrid('a-classes','a', true);
     bindFile('t-file','t-file-prev');
     bindFile('a-file','a-file-prev');
     bindFile('m-file','m-file-prev');
     bindFile('p-file','p-file-prev');
     notlariYukle();
     pomoGoster(POMO_SURE);
-    const dt=$('#t-tarih'); if(dt) dt.min = new Date().toISOString().slice(0,10);
-    boot();
+    const dt=$('#t-tarih'); if(dt) dt.min=new Date().toISOString().slice(0,10);
+    await boot();
     await fetchPosts();
     await fetchUsers();
+    await fetchUserPrefs();
     renderAll();
     initRealtime();
-  }catch(e){
-    console.error('init hatası:', e);
-    boot();
-  }
+    appReadyForNotify=true;
+  }catch(e){ console.error('init hatası:', e); boot(); }
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
