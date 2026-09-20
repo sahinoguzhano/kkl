@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Kandilli Kız Lisesi v12 — Mobil Asistan</title>
+<title>Kandilli Kız Lisesi v13 — Mobil Asistan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -215,7 +215,7 @@ table.notlar tr:hover td{background:#fbf6ea}
   <div class="gate-card">
     <div class="crest">KKL</div>
     <h1>Kandilli Kız Lisesi</h1>
-    <div class="motto">Mobil Asistan · v12</div>
+    <div class="motto">Mobil Asistan · v13</div>
     <div class="rule"><i class="fa-solid fa-diamond"></i></div>
     <div class="gate-form">
       <label class="f-label" for="g-ad">Adın / Lakabın</label>
@@ -237,14 +237,14 @@ table.notlar tr:hover td{background:#fbf6ea}
       <span style="color:rgba(255,255,255,.4)">|</span>
       <button onclick="modalAc('modal-idare')"><i class="fa-solid fa-building-columns"></i> İdare Girişi</button>
     </div>
-    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 12 · EYLÜL 2026</div>
+    <div class="v-foot">KKL BİLİŞİM · SÜRÜM 13 · EYLÜL 2026</div>
   </div>
 </div>
 
 <!-- ÖĞRETMEN MODALI -->
 <div class="modal hidden" id="modal-ogretmen">
   <div class="modal-box">
-<div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v12</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="modal-head"><i class="fa-solid fa-chalkboard-user" style="color:var(--altin)"></i><h3>Öğretmen Girişi · v13</h3><button class="x" onclick="modalKapat('modal-ogretmen')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body"><div id="teacher-login"><label class="f-label" for="o-email">E-posta</label><input class="f-input" id="o-email" type="email" autocomplete="email"><label class="f-label" for="o-sifre">Şifre</label><input class="f-input" id="o-sifre" type="password" autocomplete="current-password"><button class="btn btn-bordo" style="width:100%;margin-top:12px" onclick="ogretmenGiris()"><i class="fa-solid fa-right-to-bracket"></i> Güvenli Giriş Yap</button><button class="mini-link" style="margin:14px auto 0;display:block" onclick="teacherRegisterForm()">Öğretmen hesabı oluştur</button></div><div id="teacher-register" class="hidden"><label class="f-label" for="o-ad">Ad – Soyad</label><input class="f-input" id="o-ad" maxlength="60" oninput="liveClean(this)"><label class="f-label" for="o-brans">Branş</label><select class="f-input" id="o-brans"><option>Fizik</option><option>Matematik</option><option>Kimya</option><option>Biyoloji</option><option>Türk Dili ve Edebiyatı</option><option>Tarih</option><option>Coğrafya</option><option>İngilizce</option><option>Rehberlik</option><option>Diğer</option></select><label class="f-label" for="or-email">E-posta</label><input class="f-input" id="or-email" type="email" autocomplete="email"><label class="f-label" for="or-sifre">Şifre (en az 8 karakter)</label><input class="f-input" id="or-sifre" type="password" minlength="8" autocomplete="new-password"><button class="btn btn-altin" style="width:100%;margin-top:12px" onclick="ogretmenKayit()"><i class="fa-solid fa-user-plus"></i> Kayıt Ol</button><button class="mini-link" style="margin:14px auto 0;display:block" onclick="teacherLoginForm()">Girişe dön</button></div></div>
   </div>
 </div>
@@ -252,7 +252,7 @@ table.notlar tr:hover td{background:#fbf6ea}
 <!-- İDARE MODALI -->
 <div class="modal hidden" id="modal-idare">
   <div class="modal-box">
-<div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v12</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="modal-head"><i class="fa-solid fa-building-columns" style="color:var(--altin)"></i><h3>İdare Girişi · v13</h3><button class="x" onclick="modalKapat('modal-idare')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body"><label class="f-label" for="i-email">Kurumsal e-posta</label><input class="f-input" id="i-email" type="email" autocomplete="email"><label class="f-label" for="i-sifre">Şifre</label><input class="f-input" id="i-sifre" type="password" autocomplete="current-password"><button class="btn btn-bordo" style="width:100%;margin-top:12px" onclick="idareGiris()"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap</button><p style="font-size:.76rem;color:var(--soluk);margin-top:14px">İdare hesabı bu ekrandan oluşturulmaz. Hesap açma işlemi yalnızca yetkili Edge Function üzerinden yapılmalıdır.</p></div>
   </div>
 </div>
@@ -262,7 +262,7 @@ table.notlar tr:hover td{background:#fbf6ea}
   <header>
     <div class="logo">KKL</div>
     <div class="head-titles"><div class="name">Kandilli Kız Lisesi</div><div class="sub">Mobil Asistan</div></div>
-    <span class="v-badge">v12</span>
+    <span class="v-badge">v13</span>
     <div class="quick-logins" id="quick-logins">
       <button onclick="ogrenciIcinGate()">Öğrenci</button>
       <button onclick="modalAc('modal-ogretmen')">Öğretmen</button>
@@ -453,7 +453,7 @@ table.notlar tr:hover td{background:#fbf6ea}
 <div class="lightbox hidden" id="lightbox" onclick="lightboxKapat()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img id="lightbox-img" alt="Büyütülmüş görsel"></div>
 
 <script>
-const CURRENT_VERSION = '12';
+const CURRENT_VERSION = '13';
 const SUPABASE_URL = 'https://qmyydpsgtuerjppqhurn.supabase.co';
 /* Yalnızca Supabase Dashboard > Project Settings > API altındaki anon/publishable anahtarı kullanın. Service-role anahtarı burada kesinlikle kullanılmaz. */
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFteXlkcHNndHVlcmpwcHFodXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4OTgwMjAsImV4cCI6MjEwNTQ3NDAyMH0.qG1AqWNQwV5rSf0G28EM_1rcNTXFB5u8U0bQ8IemAZI';
@@ -1282,7 +1282,7 @@ async function init(){
   }catch(e){ console.error('init hatası:', e); boot(); }
 }
 
-/* ===== v12 KKL2 güvenli Auth/RLS katmanı ===== */
+/* ===== v13 KKL2 güvenli Auth/RLS katmanı ===== */
 const anonKeyConfigured=SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.startsWith('BURAYA_');
 let authUser=null, realtimeChannel=null;
 const dbRole=r=>({student:'ogrenci',teacher:'ogretmen',admin:'idare',administrator:'idare',superadmin:'superadmin',ogrenci:'ogrenci',ogretmen:'ogretmen',idare:'idare'}[r]||'ogrenci');
@@ -1355,9 +1355,9 @@ async function medyaHazirla(id){const f=fileState[id];if(!f)return {media_kind:n
 function relevantToMe(p){return !!state.session&&(state.session.role==='ogrenci'?ogrenciGorur(p):state.session.role==='ogretmen'?ogretmenGorur(p):true)}
 function initRealtime(){if(!sb||realtimeChannel)return;realtimeChannel=sb.channel('kkl2-posts').on('postgres_changes',{event:'*',schema:'public',table:'posts'},async payload=>{await fetchPosts();renderAll();if(payload.eventType==='INSERT')maybeNotify(payload.new)}).subscribe();}
 function teacherRegisterForm(){$('#teacher-login').classList.add('hidden');$('#teacher-register').classList.remove('hidden');$('#auth-modal-title').textContent='Öğretmen Kaydı';}
-function teacherLoginForm(){$('#teacher-register').classList.add('hidden');$('#teacher-login').classList.remove('hidden');$('#auth-modal-title').textContent='Öğretmen Girişi · v12';}
+function teacherLoginForm(){$('#teacher-register').classList.add('hidden');$('#teacher-login').classList.remove('hidden');$('#auth-modal-title').textContent='Öğretmen Girişi · v13';}
 async function ogrenciGiris(){if(!sb)return toast('Anon/publishable anahtarı henüz eklenmedi.');const name=cleanText($('#g-ad').value),sinif=$('#g-sinif').value;if(!name)return toast('Lütfen adınızı veya lakabınızı yazın.');const {data,error}=await sb.auth.signInAnonymously({options:{data:{name,sinif}}});if(error){if(/anonymous.*disabled/i.test(error.message))return toast('Öğrenci girişi için Supabase Dashboard → Authentication → Providers → Anonymous bölümünden “Enable Anonymous Sign-Ins” ayarını açın.');return toast(error.message)}authUser=data.user;let p=await ensureProfile();state.session=profileToLegacy(p||{id:authUser.id,name,sinif,role:'ogrenci',approval_status:'approved'});requestNotifPermission();await openAuthenticated();}
-async function ogretmenKayit(){if(!sb)return toast('Anon/publishable anahtarı henüz eklenmedi.');const name=cleanText($('#o-ad').value),branch=$('#o-brans').value,email=$('#or-email').value.trim(),password=$('#or-sifre').value;if(!name||!email||password.length<8)return toast('Ad, e-posta ve en az 8 karakter şifre gerekli.');const options={data:{account_type:'teacher',name,branch}};if(['http:','https:'].includes(location.protocol))options.emailRedirectTo=location.href.split('#')[0];const {error}=await sb.auth.signUp({email,password,options});if(error)return toast(error.message);toast('Kayıt alındı. E-posta doğrulaması ve idare onayı beklenir.');teacherLoginForm();}
+async function ogretmenKayit(){if(!sb)return toast('Anon/publishable anahtarı henüz eklenmedi.');const name=cleanText($('#o-ad').value),branch=$('#o-brans').value,email=$('#or-email').value.trim(),password=$('#or-sifre').value;if(!name||!email||password.length<8)return toast('Ad, e-posta ve en az 8 karakter şifre gerekli.');const {data,error}=await sb.auth.signUp({email,password,options:{data:{account_type:'teacher',name,branch}}});if(error)return toast(error.message);if(data.session)await sb.auth.signOut();toast('Kayıt alındı. Süper yönetici onayı sonrasında giriş yapabilirsiniz.');teacherLoginForm();}
 async function ogretmenGiris(){if(!sb)return toast('Anon/publishable anahtarı henüz eklenmedi.');const {data,error}=await sb.auth.signInWithPassword({email:$('#o-email').value.trim(),password:$('#o-sifre').value});if(error)return toast(error.message);authUser=data.user;const p=await ensureProfile();if(!p)return toast('Profiliniz hazırlanıyor; lütfen kısa süre sonra tekrar deneyin.');state.session=profileToLegacy(p);if(state.session.role!=='ogretmen'||state.session.approval_status!=='approved'){await sb.auth.signOut();return toast('Öğretmen hesabınız henüz idare tarafından onaylanmadı.');}modalKapat('modal-ogretmen');await openAuthenticated();}
 async function idareGiris(){if(!sb)return toast('Anon/publishable anahtarı henüz eklenmedi.');const {data,error}=await sb.auth.signInWithPassword({email:$('#i-email').value.trim(),password:$('#i-sifre').value});if(error)return toast(error.message);authUser=data.user;const p=await ensureProfile();state.session=profileToLegacy(p||{});if(!['idare','superadmin'].includes(state.session.role)){await sb.auth.signOut();return toast('Bu hesap idare yetkisine sahip değil.');}modalKapat('modal-idare');await openAuthenticated();}
 async function cikYap(){if(sb)await sb.auth.signOut();authUser=null;state.session=null;location.reload();}
@@ -1368,7 +1368,8 @@ function buildNav(){const nav=$('#bottom-nav');if(!nav||!state.session)return;co
 function renderStudentProgram(){const c=$('#student-program'),p=getProgramForClass(state.session.sinif);if(c)c.innerHTML=p?postCard(p,{om:orderMap()}):bosMesaj('fa-calendar-xmark','Sınıfınız için ders programı eklenmedi.');}
 function renderMenu(sel){const c=$(sel),p=enYeni(state.posts.filter(x=>x.type==='yemek'))[0];if(c)c.innerHTML=p?postCard(p,{om:orderMap()}):bosMesaj('fa-utensils','Yemek menüsü henüz eklenmedi.');}
 function renderAdminPrograms(){const c=$('#admin-program-list'),ps=enYeni(state.posts.filter(x=>x.type==='program'));if(c)c.innerHTML=ps.length?ps.map(p=>postCard(p,{om:orderMap(),canDelete:true})).join(''):bosMesaj('fa-calendar-xmark','Henüz ders programı yok.');}
-function renderUsers(){const c=$('#user-list');if(!c)return;let list=state.users||[];if(state.userFilter&&state.userFilter!=='all'){list=state.userFilter==='ogrenci'?list.filter(x=>x.role==='ogrenci'):state.userFilter==='ogretmen'?list.filter(x=>x.role==='ogretmen'):state.userFilter==='idare'?list.filter(x=>['idare','superadmin'].includes(x.role)):list.filter(x=>x.sinif===state.userFilter)}c.innerHTML=list.length?list.map(u=>'<div class="user-item '+(u.banned?'banned':'')+'"><div class="user-avatar">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="">':'<div class="placeholder"><i class="fa-solid fa-user"></i></div>')+'</div><div class="user-info"><div class="user-name">'+esc(u.name)+'</div><div class="user-detail">'+esc(ROLE_LABEL[u.role]||u.role)+' · '+esc(u.brans||u.sinif||u.unvan||'')+'</div><div class="user-lastseen">'+(u.approval_status==='pending'?'Onay bekliyor':fmtDateTime(u.last_seen||u.created_at))+'</div></div></div>').join(''):bosMesaj('fa-users-slash','Katılımcı bulunamadı.');}
+function renderUsers(){const c=$('#user-list');if(!c)return;let list=state.users||[];if(state.userFilter&&state.userFilter!=='all'){list=state.userFilter==='ogrenci'?list.filter(x=>x.role==='ogrenci'):state.userFilter==='ogretmen'?list.filter(x=>x.role==='ogretmen'):state.userFilter==='idare'?list.filter(x=>['idare','superadmin'].includes(x.role)):list.filter(x=>x.sinif===state.userFilter)}c.innerHTML=list.length?list.map(u=>{const canDelete=state.session?.role==='superadmin'&&u.id!==authUser?.id;return '<div class="user-item '+(u.banned?'banned':'')+'"><div class="user-avatar">'+(u.avatar_url?'<img src="'+esc(u.avatar_url)+'" alt="">':'<div class="placeholder"><i class="fa-solid fa-user"></i></div>')+'</div><div class="user-info"><div class="user-name">'+esc(u.name)+'</div><div class="user-detail">'+esc(ROLE_LABEL[u.role]||u.role)+' · '+esc(u.brans||u.sinif||u.unvan||'')+'</div><div class="user-lastseen">'+(u.approval_status==='pending'?'Onay bekliyor':fmtDateTime(u.last_seen||u.created_at))+'</div></div>'+(canDelete?'<button class="ban-btn" onclick="deleteManagedUser(\''+esc(u.id)+'\',\''+esc(u.name)+'\')"><i class="fa-solid fa-trash-can"></i> Sil</button>':'')+'</div>'}).join(''):bosMesaj('fa-users-slash','Katılımcı bulunamadı.');}
+async function deleteManagedUser(target_user_id,name){if(state.session?.role!=='superadmin')return toast('Bu işlem yalnızca Süper İdare içindir.');if(!confirm(esc(name)+' hesabı ve ilişkili verileri kalıcı olarak silinsin mi?'))return;const {error}=await sb.functions.invoke('admin-delete-user',{body:{target_user_id}});if(error)return toast('Silme işlemi yapılamadı: '+error.message);toast('Kullanıcı silindi.');await fetchUsers();renderUsers();}
 async function renderApprovals(){const box=$('#approval-list');if(!box)return;if(state.session?.role!=='superadmin'){box.innerHTML=bosMesaj('fa-lock','Bu alan yalnızca Süper İdare içindir.');return}const {data,error}=await sb.from('profiles').select('id,name,branch,created_at').eq('approval_status','pending').eq('role','beklemede').order('created_at');if(error){box.innerHTML=bosMesaj('fa-triangle-exclamation',esc(error.message));return}box.innerHTML=data?.length?data.map(p=>'<div class="user-item"><div class="user-info"><div class="user-name">'+esc(p.name)+'</div><div class="user-detail">'+esc(p.branch||'')+' · '+fmtDateTime(p.created_at)+'</div></div><button class="btn btn-altin" onclick="teacherDecision(\''+esc(p.id)+'\',\'approve_teacher\')">Onayla</button><button class="ban-btn" onclick="teacherDecision(\''+esc(p.id)+'\',\'reject_teacher\')">Reddet</button></div>').join(''):bosMesaj('fa-circle-check','Bekleyen öğretmen kaydı yok.');}
 async function teacherDecision(target_user_id,rpc){const {error}=await sb.rpc(rpc,{target_user_id});if(error)return toast(error.message);toast(rpc==='approve_teacher'?'Öğretmen onaylandı.':'Öğretmen kaydı reddedildi.');await renderApprovals();}
 function tabSec(id){state.aktifTab=id;$$('main > section').forEach(s=>s.classList.toggle('hidden',s.dataset.tab!==id));$$('.nav-item').forEach(b=>b.classList.toggle('aktif',b.getAttribute('onclick')?.includes("'"+id+"'")));window.scrollTo({top:0,behavior:'smooth'});renderAll();if(id==='onaylar')renderApprovals();}
